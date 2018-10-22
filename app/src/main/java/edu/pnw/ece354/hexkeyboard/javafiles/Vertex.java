@@ -1,3 +1,5 @@
+package edu.pnw.ece354.hexkeyboard.javafiles;
+
 public class Vertex {
     private double x, y;
 

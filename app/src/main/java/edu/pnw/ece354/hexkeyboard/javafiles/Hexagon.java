@@ -1,3 +1,5 @@
+package edu.pnw.ece354.hexkeyboard.javafiles;
+
 import java.lang.Math;
 
 public class Hexagon {

@@ -1,13 +1,14 @@
 package edu.pnw.ece354.hexkeyboard;
 
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.content.Context;
+        import android.support.v7.app.AppCompatActivity;
+        import android.os.Bundle;
+        import android.graphics.Canvas;
+        import android.graphics.Color;
+        import android.graphics.Paint;
+        import android.content.Context;
 //import android.os.Bundle;
-import android.view.View;
+        import android.view.View;
+        import edu.pnw.ece354.hexkeyboard.javafiles.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,7 +44,17 @@ public class MainActivity extends AppCompatActivity {
             p.setColor(Color.BLACK);
 
             //draw test
-            canvas.drawLine((float)0.0,(float)0.0,(float)0.0,(float)5.0,p);
+            Vertex va = new Vertex(0.0,0.0);
+            Vertex vb = new Vertex(500.0,500.0);
+            canvas.drawLine((float)va.getX(),(float)va.getX(),(float)vb.getX(),(float)vb.getY(),p);
+
+            canvas.drawLine(
+                    (float)50.0, // startX
+                    canvas.getHeight() / 2, // startY
+                    canvas.getWidth() - (float)50.0, // stopX
+                    canvas.getHeight() / 2, // stopY
+                    p // Paint
+            );
         }
     }
 }

@@ -49,13 +49,18 @@ public class MainActivity extends AppCompatActivity {
 //            canvas.drawLine((float)va.getX(),(float)va.getX(),(float)vb.getY(),(float)vb.getY(),p);
 //
 
-            Hexagon[][] hexys = new Hexagon[10][10];
+            int numx = 20;
+            int numy = 20;
+            Hexagon[][] hexys = new Hexagon[numx][numy];
+            double start = 100.0;
             double radius = 69.0;
-            for(int x = 0; x < 10; x++)
+            double apothem = (Math.sqrt(3.0) / 2.0) * radius;
+            for(int x = 0; x < numx; x++)
             {
-                for(int y = 0; y < 10; y++)
+                for(int y = 0; y < numy; y++)
                 {
-                    Vertex center = new Vertex(radius + radius*x*2, radius+ radius * 2*y);
+                    Vertex center = new Vertex(start + radius*x*1.5, start + apothem*2.0*y - (x%2.0)*apothem);
+
                     hexys[x][y] = new Hexagon(center,radius);
                     LineSeg[] lineSegs = hexys[x][y].getLineSegs();
                     for(LineSeg l : lineSegs)

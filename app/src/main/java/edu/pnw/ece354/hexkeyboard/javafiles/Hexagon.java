@@ -49,12 +49,20 @@ public class Hexagon {
     private void calcVertices()
     {
         vertices = new Vertex[6];
-        vertices[0] = new Vertex(center.getX() + R,center.getY());
+        /*vertices[0] = new Vertex(center.getX() + R,center.getY());
         vertices[1] = new Vertex(center.getX() + R/2,center.getY() + A);
         vertices[2] = new Vertex(center.getX() - R/2,center.getY() + A);
         vertices[3] = new Vertex(center.getX() - R,center.getY());
         vertices[4] = new Vertex(center.getX() - R/2,center.getY() - A);
-        vertices[5] = new Vertex(center.getX() + R/2,center.getY() - A);
+        vertices[5] = new Vertex(center.getX() + R/2,center.getY() - A);*/
+
+        //rotate 90deg
+        vertices[0] = new Vertex(center.getX() + A,center.getY() + R/2);
+        vertices[1] = new Vertex(center.getX(),center.getY() + R);
+        vertices[2] = new Vertex(center.getX() - A,center.getY() + R/2);
+        vertices[3] = new Vertex(center.getX() - A,center.getY() - R/2);
+        vertices[4] = new Vertex(center.getX(),center.getY() - R);
+        vertices[5] = new Vertex(center.getX() + A,center.getY() - R/2);
     }
     private void calcLineSegs()
     {

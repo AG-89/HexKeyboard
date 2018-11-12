@@ -7,8 +7,11 @@ package edu.pnw.ece354.hexkeyboard;
         import android.graphics.Paint;
         import android.content.Context;
 //import android.os.Bundle;
+        import android.util.Log;
+        import android.view.MotionEvent;
         import android.view.View;
         import edu.pnw.ece354.hexkeyboard.javafiles.*;
+        import android.gesture.*;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,6 +20,65 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
         setContentView(new MyView(this));
+
+    }
+
+    private String TAG = MainActivity.class.getSimpleName();
+    float initialX, initialY;
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        //mGestureDetector.onTouchEvent(event);
+
+        int action = event.getActionMasked();
+
+        switch (action) {
+
+            case MotionEvent.ACTION_DOWN:
+                initialX = event.getX();
+                initialY = event.getY();
+
+                Log.d(TAG, "Action was DOWN");
+                break;
+
+            case MotionEvent.ACTION_MOVE:
+                Log.d(TAG, "Action was MOVE");
+                break;
+
+            case MotionEvent.ACTION_UP:
+                float finalX = event.getX();
+                float finalY = event.getY();
+
+                Log.d(TAG, "Action was UP");
+
+                if (initialX < finalX) {
+                    Log.d(TAG, "Left to Right swipe performed");
+                }
+
+                if (initialX > finalX) {
+                    Log.d(TAG, "Right to Left swipe performed");
+                }
+
+                if (initialY < finalY) {
+                    Log.d(TAG, "Up to Down swipe performed");
+                }
+
+                if (initialY > finalY) {
+                    Log.d(TAG, "Down to Up swipe performed");
+                }
+
+                break;
+
+            case MotionEvent.ACTION_CANCEL:
+                Log.d(TAG,"Action was CANCEL");
+                break;
+
+            case MotionEvent.ACTION_OUTSIDE:
+                Log.d(TAG, "Movement occurred outside bounds of current screen element");
+                break;
+        }
+
+        return super.onTouchEvent(event);
     }
 
     public class MyView extends View {

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/../AndroidProject.iml" filepath="$PROJECT_DIR$/../AndroidProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../HexKeyboard.iml" filepath="$PROJECT_DIR$/../HexKeyboard.iml" />
       <module fileurl="file://$PROJECT_DIR$/app.iml" filepath="$PROJECT_DIR$/app.iml" />
     </modules>
   </component>

@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
                 initialX = event.getX();
                 initialY = event.getY();
 
+                Log.d(TAG, String.format("init coords: (%f, %f)",initialX,initialY));
+
                 Log.d(TAG, "Action was DOWN");
                 break;
 
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.d(TAG, "Action was UP");
 
-                if (initialX < finalX) {
+                /*if (initialX < finalX) {
                     Log.d(TAG, "Left to Right swipe performed");
                 }
 
@@ -66,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if (initialY > finalY) {
                     Log.d(TAG, "Down to Up swipe performed");
-                }
+                }*/
 
                 break;
 
@@ -135,8 +137,14 @@ public class MainActivity extends AppCompatActivity {
                         //line borders
                         canvas.drawLine((float)v[0].getX(),(float)v[0].getY(),(float)v[1].getX(),(float)v[1].getY(),p);
                     }
+                    paint.setColor(Color.parseColor("#80FF00"));
                     canvas.drawPath(path, paint);
                     path.close();
+                    //draw text
+                    paint.setColor(Color.BLACK);
+                    paint.setTextSize(40);
+                    String s = String.format("(%d,%d)",x,y);
+                    canvas.drawText(s, (float)center.getX()-(float)apothem/2, (float)center.getY(), paint);
                 }
             }
         }

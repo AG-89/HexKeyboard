@@ -5,6 +5,7 @@ package edu.pnw.ece354.hexkeyboard;
         import android.graphics.Canvas;
         import android.graphics.Color;
         import android.graphics.Paint;
+        import android.graphics.Path;
         import android.content.Context;
 //import android.os.Bundle;
         import android.util.Log;
@@ -98,35 +99,44 @@ public class MainActivity extends AppCompatActivity {
             paint.setColor(Color.WHITE);
             canvas.drawPaint(paint);
             // Use Color.parseColor to define HTML colors
-            paint.setColor(Color.parseColor("#FF0000"));
+            paint.setColor(Color.parseColor("#80FF00"));
 
             Paint p = new Paint();
             p.setColor(Color.BLACK);
-
             p.setStrokeWidth(10);
 
-            //draw test
-//            Vertex va = new Vertex(0.0,0.0);
-//            Vertex vb = new Vertex(500.0,500.0);
-//            canvas.drawLine((float)va.getX(),(float)va.getX(),(float)vb.getY(),(float)vb.getY(),p);
-//
-
-            Hexagon[][] hexys = new Hexagon[10][10];
+            int numx = 20;
+            int numy = 20;
+            Hexagon[][] hexys = new Hexagon[numx][numy];
+            double start = 100.0;
             double radius = 69.0;
-            for(int x = 0; x < 10; x++)
+            double apothem = (Math.sqrt(3.0) / 2.0) * radius;
+            for(int x = 0; x < numx; x++)
             {
-                for(int y = 0; y < 10; y++)
+                for(int y = 0; y < numy; y++)
                 {
-                    Vertex center = new Vertex(radius + radius*x*2, radius+ radius * 2*y);
+                    Vertex center = new Vertex(start + apothem*2.0*x - (y%2.0)*apothem,start + radius*y*1.5);
+
                     hexys[x][y] = new Hexagon(center,radius);
                     LineSeg[] lineSegs = hexys[x][y].getLineSegs();
+                    //draw filled in 6 triangles = 1 hexagon
+
+                    //draw lines & fill w/ path
+                    Path path = new Path();
+                    path.setFillType(Path.FillType.EVEN_ODD);
+                    Vertex[] vfirst = lineSegs[0].getVertices();
+                    path.moveTo((float)vfirst[0].getX(),(float)vfirst[0].getY());
                     for(LineSeg l : lineSegs)
                     {
                         Vertex[] v;
                         v = l.getVertices();
+                        //fill
+                        path.lineTo((float)v[1].getX(),(float)v[1].getY());
+                        //line borders
                         canvas.drawLine((float)v[0].getX(),(float)v[0].getY(),(float)v[1].getX(),(float)v[1].getY(),p);
-
                     }
+                    canvas.drawPath(path, paint);
+                    path.close();
                 }
             }
         }

@@ -1,5 +1,6 @@
 package edu.pnw.ece354.hexkeyboard;
 
+        import android.graphics.Point;
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
         import android.graphics.Canvas;
@@ -9,6 +10,7 @@ package edu.pnw.ece354.hexkeyboard;
         import android.content.Context;
 //import android.os.Bundle;
         import android.util.Log;
+        import android.view.Display;
         import android.view.MotionEvent;
         import android.view.View;
         import edu.pnw.ece354.hexkeyboard.javafiles.*;
@@ -16,16 +18,58 @@ package edu.pnw.ece354.hexkeyboard;
 
 public class MainActivity extends AppCompatActivity {
 
+    private String TAG = MainActivity.class.getSimpleName();
+
+    //music stuff
+    MusicScale Scale_12EDO = new MusicScale(12);
+    double A4 = 440.0; //A4 = 440 hz default
+    double C0 = A4 * Math.pow(2.0,(-3.0 / 12.0)) / 16.0; //12edo C0 from A4
+    double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
+
+    //hexagons stored in 2d array
+    int numx = 4;
+    int numy = 6;
+    Hexagon[][] hexys = new Hexagon[numx*2+1][numy*2+1];
+    double radius = 69.0;
+    double apothem = (Math.sqrt(3.0) / 2.0) * radius;
+
+    void calcHexagonGrid(Vertex ScreenCenter)
+    {
+        for (int x = -numx; x <= numx; x++) {
+            for (int y = -numy; y <= numy; y++) {
+                int[] coords = new int[]{x, y};
+                Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2.0) * apothem, ScreenCenter.getY() - radius * y * 1.5);
+                hexys[x + numx][y + numy] = new Hexagon(center, radius, coords);
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
         setContentView(new MyView(this));
-
     }
 
-    private String TAG = MainActivity.class.getSimpleName();
-    float initialX, initialY;
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        //get center of screen
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int ScreenWidth = size.x;
+        int ScreenHeight = size.y - 220; //fix later
+        Vertex mCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
+        System.out.println(ScreenWidth);
+        System.out.println(ScreenHeight);
+
+        //create hexagon grid
+        calcHexagonGrid(mCenter);
+    }
+
+    float initialX, initialY; //from touch event
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -37,11 +81,32 @@ public class MainActivity extends AppCompatActivity {
 
             case MotionEvent.ACTION_DOWN:
                 initialX = event.getX();
-                initialY = event.getY();
+                initialY = event.getY() - 220; //fix later
 
                 Log.d(TAG, String.format("init coords: (%f, %f)",initialX,initialY));
 
                 Log.d(TAG, "Action was DOWN");
+
+                //check point inside which hexagon here
+                Vertex TouchV = new Vertex((double)initialX,(double)initialY);
+                int[] TouchHexagonCoords = new int[2]; //integer coordinates of hexagon
+                boolean TouchHexagonMatch = false; //is inside ANY hexagon
+                for (Hexagon[] hexagon_row : hexys)
+                {
+                    for (Hexagon hexagon : hexagon_row)
+                    {
+                        if(hexagon.pointInHexagon(TouchV))
+                        {
+                            TouchHexagonCoords = hexagon.getCoords();
+                            TouchHexagonMatch = true;
+                        }
+                    }
+                }
+
+                if(TouchHexagonMatch) {
+                    Log.d(TAG, String.format("Clicked in hexagon: (%d, %d)", TouchHexagonCoords[0], TouchHexagonCoords[1]));
+                }
+
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -85,57 +150,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class MyView extends View {
-        Paint paint = null;
+        Paint paint;
 
         public MyView(Context context) {
             super(context);
             paint = new Paint();
         }
 
+
         @Override
-        protected void onDraw(Canvas canvas) {
+        protected void onDraw(Canvas canvas)
+        {
             super.onDraw(canvas);
-//            int x = getWidth();
-//            int y = getHeight();
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.WHITE);
             canvas.drawPaint(paint);
-            // Use Color.parseColor to define HTML colors
-            paint.setColor(Color.parseColor("#80FF00"));
 
-            Paint p = new Paint();
-            p.setColor(Color.BLACK);
-            p.setStrokeWidth(10);
-
-            int numx = 20;
-            int numy = 20;
-            Hexagon[][] hexys = new Hexagon[numx][numy];
-            double start = 100.0;
-            double radius = 69.0;
-            double apothem = (Math.sqrt(3.0) / 2.0) * radius;
-            for(int x = 0; x < numx; x++)
+            for (Hexagon[] hexagon_row : hexys)
             {
-                for(int y = 0; y < numy; y++)
+                for (Hexagon hexagon : hexagon_row)
                 {
-                    Vertex center = new Vertex(start + apothem*2.0*x - (y%2.0)*apothem,start + radius*y*1.5);
+                    LineSeg[] lineSegs = hexagon.getLineSegs();
+                    int[] coords = hexagon.getCoords();
+                    int x = coords[0];
+                    int y = coords[1];
 
-                    hexys[x][y] = new Hexagon(center,radius);
-                    LineSeg[] lineSegs = hexys[x][y].getLineSegs();
-                    //draw filled in 6 triangles = 1 hexagon
-
-                    //draw lines & fill w/ path
                     Path path = new Path();
                     path.setFillType(Path.FillType.EVEN_ODD);
                     Vertex[] vfirst = lineSegs[0].getVertices();
-                    path.moveTo((float)vfirst[0].getX(),(float)vfirst[0].getY());
-                    for(LineSeg l : lineSegs)
-                    {
+                    path.moveTo((float) vfirst[0].getX(), (float) vfirst[0].getY());
+                    for (LineSeg l : lineSegs) {
                         Vertex[] v;
                         v = l.getVertices();
                         //fill
-                        path.lineTo((float)v[1].getX(),(float)v[1].getY());
+                        path.lineTo((float) v[1].getX(), (float) v[1].getY());
                         //line borders
-                        canvas.drawLine((float)v[0].getX(),(float)v[0].getY(),(float)v[1].getX(),(float)v[1].getY(),p);
+                        paint.setColor(Color.parseColor("#000000"));
+                        paint.setStrokeWidth(10);
+                        canvas.drawLine((float) v[0].getX(), (float) v[0].getY(), (float) v[1].getX(), (float) v[1].getY(), paint);
                     }
                     paint.setColor(Color.parseColor("#80FF00"));
                     canvas.drawPath(path, paint);
@@ -143,8 +195,8 @@ public class MainActivity extends AppCompatActivity {
                     //draw text
                     paint.setColor(Color.BLACK);
                     paint.setTextSize(40);
-                    String s = String.format("(%d,%d)",x,y);
-                    canvas.drawText(s, (float)center.getX()-(float)apothem/2, (float)center.getY(), paint);
+                    String s = String.format("(%d,%d)", x, y);
+                    canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
                 }
             }
         }

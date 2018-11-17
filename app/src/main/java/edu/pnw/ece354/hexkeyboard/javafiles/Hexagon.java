@@ -10,21 +10,31 @@ public class Hexagon {
     double rotationAngle;
     double stretchX, stretchY;
     double skewX, skewY;
+    int[] coords; //2d integer coordinate
 
     public Hexagon()
     {
         center = new Vertex(0.0,0.0);
         setR(1.0);
+        coords = new int[]{0,0};
     }
     public Hexagon(Vertex c)
     {
         center = c;
         setR(1.0);
+        coords = new int[]{0,0};
     }
     public Hexagon(Vertex c, double Radius)
     {
         center = c;
         setR(Radius);
+        coords = new int[]{0,0};
+    }
+    public Hexagon(Vertex c, double Radius, int[] co)
+    {
+        center = c;
+        setR(Radius);
+        coords = co;
     }
     //add transformation constructors later
 
@@ -98,5 +108,24 @@ public class Hexagon {
     public double getR()
     {
         return R;
+    }
+
+    public void setCoords(int a,int b)
+    {
+        coords = new int[]{a,b};
+    }
+    public int[] getCoords()
+    {
+        return coords;
+    }
+
+    /**
+     * Checks if a point is inside the hexagon
+     * @param p Point (Vertex) to check
+     * @return bool result
+     */
+    public boolean pointInHexagon(Vertex p)
+    {
+        return PointInPolygon.isInside(vertices, 6, p);
     }
 }

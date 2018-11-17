@@ -41,4 +41,9 @@ public class Vertex {
         setX(ax);
         setY(ay);
     }
+
+    public double[] toArray()
+    {
+        return new double[]{x,y};
+    }
 }

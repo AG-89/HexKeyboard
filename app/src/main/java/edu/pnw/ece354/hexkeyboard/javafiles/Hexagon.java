@@ -11,30 +11,30 @@ public class Hexagon {
     double stretchX, stretchY;
     double skewX, skewY;
     int[] coords; //2d integer coordinate
+    int noteindex;
 
     public Hexagon()
     {
-        center = new Vertex(0.0,0.0);
-        setR(1.0);
-        coords = new int[]{0,0};
+        this(new Vertex(0.0,0.0),1.0,new int[]{0,0},0);
     }
     public Hexagon(Vertex c)
     {
-        center = c;
-        setR(1.0);
-        coords = new int[]{0,0};
+        this(c,1.0,new int[]{0,0},0);
     }
     public Hexagon(Vertex c, double Radius)
     {
-        center = c;
-        setR(Radius);
-        coords = new int[]{0,0};
+        this(c,Radius,new int[]{0,0},0);
     }
     public Hexagon(Vertex c, double Radius, int[] co)
+    {
+        this(c,Radius,co,0);
+    }
+    public Hexagon(Vertex c, double Radius, int[] co, int ni)
     {
         center = c;
         setR(Radius);
         coords = co;
+        noteindex = ni;
     }
     //add transformation constructors later
 
@@ -117,6 +117,12 @@ public class Hexagon {
     public int[] getCoords()
     {
         return coords;
+    }
+    public int getNoteIndex() {
+        return noteindex;
+    }
+    public void setNoteIndex(int noteindex) {
+        this.noteindex = noteindex;
     }
 
     /**

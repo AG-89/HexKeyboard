@@ -4,10 +4,8 @@ public class Vertex {
     private double x, y;
 
     public Vertex() {
-        x = 0.0;
-        y = 0.0;
+        this(0.0,0.0);
     }
-
     public Vertex(double ax, double ay) {
         x = ax;
         y = ay;

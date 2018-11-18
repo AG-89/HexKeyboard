@@ -39,7 +39,9 @@ public class MainActivity extends AppCompatActivity {
             for (int y = -numy; y <= numy; y++) {
                 int[] coords = new int[]{x, y};
                 Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2.0) * apothem, ScreenCenter.getY() - radius * y * 1.5);
-                hexys[x + numx][y + numy] = new Hexagon(center, radius, coords);
+                //wicki-hayden
+                int noteindex = coords[1]*6 - (coords[1]%2) + coords[0]*2;
+                hexys[x + numx][y + numy] = new Hexagon(center, radius, coords, noteindex);
             }
         }
     }
@@ -91,6 +93,7 @@ public class MainActivity extends AppCompatActivity {
                 Vertex TouchV = new Vertex((double)initialX,(double)initialY);
                 int[] TouchHexagonCoords = new int[2]; //integer coordinates of hexagon
                 boolean TouchHexagonMatch = false; //is inside ANY hexagon
+                Hexagon TouchHexagon = null;
                 for (Hexagon[] hexagon_row : hexys)
                 {
                     for (Hexagon hexagon : hexagon_row)
@@ -99,12 +102,20 @@ public class MainActivity extends AppCompatActivity {
                         {
                             TouchHexagonCoords = hexagon.getCoords();
                             TouchHexagonMatch = true;
+                            TouchHexagon = hexagon;
                         }
                     }
                 }
 
                 if(TouchHexagonMatch) {
                     Log.d(TAG, String.format("Clicked in hexagon: (%d, %d)", TouchHexagonCoords[0], TouchHexagonCoords[1]));
+                    int noteindex = TouchHexagon.getNoteIndex();
+                    //move this note name code somewhere else later
+                    //java's % is actually remainder instead of modulo, wowie. we need to handle negatives so we must use this
+                    int notename_index = ((((noteindex+11) % 12) + 12) % 12);
+                    //C-4 (middle C) as default note
+                    int notename_octave = 4+(int)Math.floor((double)noteindex/12.0);
+                    Log.d(TAG, String.format("Note to play: (index %d) \'%s%d\'", noteindex, Scale_12EDO.getNoteNames()[notename_index], notename_octave));
                 }
 
                 break;
@@ -189,13 +200,27 @@ public class MainActivity extends AppCompatActivity {
                         paint.setStrokeWidth(10);
                         canvas.drawLine((float) v[0].getX(), (float) v[0].getY(), (float) v[1].getX(), (float) v[1].getY(), paint);
                     }
-                    paint.setColor(Color.parseColor("#80FF00"));
+                    //hash set later for extention
+                    int ni = hexagon.getNoteIndex(); //note index
+                    int nim = ((((ni+11) % 12) + 12) % 12); //note index mod 12 and shifted for C
+                    if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) //12edo for now
+                    {
+                        paint.setColor(Color.parseColor("#808080"));
+                    }
+                    else
+                    {
+                        paint.setColor(Color.parseColor("#F0F0F0"));
+                    }
                     canvas.drawPath(path, paint);
                     path.close();
                     //draw text
                     paint.setColor(Color.BLACK);
                     paint.setTextSize(40);
-                    String s = String.format("(%d,%d)", x, y);
+                    //String s = String.format("(%d,%d)", x, y);
+                    //nts please clean this copypaste code up later
+                        //C-4 (middle C) as default note
+                        int notename_octave = 4+(int)Math.floor((double)ni/12.0);
+                    String s = Scale_12EDO.getNoteNames()[nim] + notename_octave;
                     canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
                 }
             }

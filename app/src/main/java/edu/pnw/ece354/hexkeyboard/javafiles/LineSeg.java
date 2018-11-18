@@ -5,15 +5,14 @@ import java.lang.Math;
 public class LineSeg {
     private Vertex a,b;
 
+    public LineSeg()
+    {
+        this(new Vertex(0.0,0.0),new Vertex(0.0,0.0));
+    }
     public LineSeg(Vertex aa, Vertex bb)
     {
         a = aa;
         b = bb;
-    }
-    public LineSeg()
-    {
-        a = new Vertex(0.0,0.0);
-        b = new Vertex(0.0,0.0);
     }
 
     public Vertex[] getVertices()

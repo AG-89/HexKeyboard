@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
                     path.close();
                     //draw text
                     paint.setColor(Color.BLACK);
-                    paint.setTextSize(40);
+                    paint.setTextSize(50);
                     //String s = String.format("(%d,%d)", x, y);
                     //nts please clean this copypaste code up later
                         //C-4 (middle C) as default note

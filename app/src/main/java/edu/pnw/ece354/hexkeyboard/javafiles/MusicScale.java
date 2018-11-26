@@ -11,13 +11,14 @@ public class MusicScale {
      */
     private double[] pitches;
     private String[] notenames;
-    private int notenum;
+    private int length;
 
     //specified
     public MusicScale(String[] nn, double[] p)
     {
         notenames = nn;
         pitches = p;
+        length = nn.length;
     }
     //generate EDO
     public MusicScale(int edonum)
@@ -26,6 +27,8 @@ public class MusicScale {
         {
             throw new IllegalArgumentException("EDO num must be >= 1");
         }
+        //length
+        length = edonum;
         //generate pitches
         pitches = new double[edonum];
         for (int x = 1; x <= edonum; x++) {
@@ -55,6 +58,45 @@ public class MusicScale {
     {
         return pitches;
     }
+
+    /**
+     * Maps a note index to a 12EDO scale index, stripping octave info
+     * @param noteIndex
+     * @return Scale index
+     */
+    public int noteIndexToScaleIndex(int noteIndex)
+    {
+        //java's % is actually remainder instead of modulo.
+        //we want a possible negative output so we do this (modulo)
+        return ((((noteIndex + length-1) % length) + length) % length);
+    }
+
+    /**
+     * Returns octave number of a note index. Base octave is 4
+     * @param noteIndex
+     * @return Octave number
+     */
+    public int noteIndexOctave(int noteIndex)
+    {
+        //C-4 (middle C) as default note
+        return 4 + (int)Math.floor((double)noteIndex/(double)length);
+    }
+
+    /**
+     * Returns frequency of a note index.
+     * @param noteIndex Note index
+     * @param A4 Frequency A4 (Default 440 Hz)
+     * @return Frequency
+     */
+    public double noteIndexPitch(int noteIndex, double A4)
+    {
+        //C-4 (middle C) as default note
+        double C4 = A4 * Math.pow(2.0,(-9.0 / 12.0)); //12edo C4 from A4
+        double[] p = getPitches();
+        double scalepitch = octaveReduce(p[noteIndexToScaleIndex(noteIndex)]);
+        double octavemodifier = Math.pow(2.0,(double)(noteIndexOctave(noteIndex) - 4));
+        return scalepitch * C4 * octavemodifier;
+}
 
     //misc. static methods
     /**

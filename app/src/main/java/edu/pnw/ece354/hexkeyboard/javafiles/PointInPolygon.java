@@ -57,7 +57,7 @@ public class PointInPolygon
      */
     public static boolean isInside(Vertex polygon[], int n, Vertex p)
     {
-        double INF = 1234567980.0;
+        double INF = Double.MAX_VALUE;
         if (n < 3)
             return false;
 

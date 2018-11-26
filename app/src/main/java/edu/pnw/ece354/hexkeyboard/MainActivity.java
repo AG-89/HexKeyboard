@@ -25,16 +25,20 @@ public class MainActivity extends AppCompatActivity {
     //music stuff
     MusicScale Scale_12EDO = new MusicScale(12);
     double A4 = 440.0; //A4 = 440 hz default
-    double C0 = A4 * Math.pow(2.0,(-3.0 / 12.0)) / 16.0; //12edo C0 from A4
+    double C0 = A4 * Math.pow(2.0,(-9.0 / 12.0)) / 16.0; //12edo C0 from A4
     double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
 
     //hexagons stored in 2d array
     int numx = 4;
-    int numy = 6;
+    int numy = 7;
     Hexagon[][] hexys = new Hexagon[numx*2+1][numy*2+1];
     double radius = 69.0;
     double apothem = (Math.sqrt(3.0) / 2.0) * radius;
 
+    /**
+     * Calculates the hexagons and their vertices but does not draw them.
+     * @param ScreenCenter Coordinates for the center of the drawing area
+     */
     void calcHexagonGrid(Vertex ScreenCenter)
     {
         for (int x = -numx; x <= numx; x++) {
@@ -96,31 +100,34 @@ public class MainActivity extends AppCompatActivity {
                 int[] TouchHexagonCoords = new int[2]; //integer coordinates of hexagon
                 boolean TouchHexagonMatch = false; //is inside ANY hexagon
                 Hexagon TouchHexagon = null;
-                for (Hexagon[] hexagon_row : hexys)
-                {
-                    for (Hexagon hexagon : hexagon_row)
-                    {
-                        if(hexagon.pointInHexagon(TouchV))
-                        {
+                for (Hexagon[] hexagon_row : hexys) {
+                    for (Hexagon hexagon : hexagon_row) {
+                        if (hexagon.pointInHexagon(TouchV)) {
                             TouchHexagonCoords = hexagon.getCoords();
                             TouchHexagonMatch = true;
                             TouchHexagon = hexagon;
+
                         }
                     }
                 }
 
                 if(TouchHexagonMatch) {
+                    //show hexagon vertices for debugging
+                    Vertex[] v = TouchHexagon.getVertices();
+                    for(Vertex vv : v)
+                    {
+                        System.out.println(vv);
+                    }
+
                     Log.d(TAG, String.format("Clicked in hexagon: (%d, %d)", TouchHexagonCoords[0], TouchHexagonCoords[1]));
                     int noteindex = TouchHexagon.getNoteIndex();
-                    //move this note name code somewhere else later
-                    //java's % is actually remainder instead of modulo, wowie. we need to handle negatives so we must use this
-                    int notename_index = ((((noteindex+11) % 12) + 12) % 12);
-                    //C-4 (middle C) as default note
-                    int notename_octave = 4+(int)Math.floor((double)noteindex/12.0);
+                    int notename_index = Scale_12EDO.noteIndexToScaleIndex(noteindex);
+                    int notename_octave = Scale_12EDO.noteIndexOctave(noteindex);
                     Log.d(TAG, String.format("Note to play: (index %d) \'%s%d\'", noteindex, Scale_12EDO.getNoteNames()[notename_index], notename_octave));
-                    //note play code
-                    //move to seperate stream so activity doesn't hang
-                    Audio.playSound("C2.WAV",this, 1.0);
+                    Log.d(TAG,String.format("Frequency (Hz) = %f",Scale_12EDO.noteIndexPitch(noteindex,A4)));
+                    //audio playback part
+                    //move to separate stream so activity doesn't hang
+                    Audio.playSound(Audio.getHKAudioFileFromNI(noteindex,Scale_12EDO,A4),this);
                 }
 
                 break;
@@ -207,14 +214,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                     //hash set later for extention
                     int ni = hexagon.getNoteIndex(); //note index
-                    int nim = ((((ni+11) % 12) + 12) % 12); //note index mod 12 and shifted for C
-                    if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) //12edo for now
+                    int nim = Scale_12EDO.noteIndexToScaleIndex(ni); //note index mod 12 and shifted for C
+                    //12edo only for now
+                    if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) //0 is C#
                     {
-                        paint.setColor(Color.parseColor("#808080"));
+                        paint.setColor(Color.parseColor("#696969"));
                     }
                     else
                     {
-                        paint.setColor(Color.parseColor("#F0F0F0"));
+                        paint.setColor(Color.parseColor("#F8F8F8"));
                     }
                     canvas.drawPath(path, paint);
                     path.close();
@@ -224,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
                     //String s = String.format("(%d,%d)", x, y);
                     //nts please clean this copypaste code up later
                         //C-4 (middle C) as default note
-                        int notename_octave = 4+(int)Math.floor((double)ni/12.0);
+                        int notename_octave = Scale_12EDO.noteIndexOctave(ni);
                     String s = Scale_12EDO.getNoteNames()[nim] + notename_octave;
                     canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
                 }

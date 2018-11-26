@@ -28,6 +28,10 @@ public class LineSeg {
         b = bb;
     }
 
+    /**
+     * Gets the length of the line segment
+     * @return Length of the line segment
+     */
     public double distance()
     {
         double ypart = (b.getY() - a.getY());
@@ -35,5 +39,14 @@ public class LineSeg {
         ypart *= ypart;
         xpart *= xpart;
         return Math.sqrt(ypart + xpart);
+    }
+    public double length()
+    {
+        return distance();
+    }
+
+    public String toString()
+    {
+        return String.format("LineSeg (%f,%f) to (%f,%f)",a.getX(),a.getY(),b.getX(),b.getY());
     }
 }

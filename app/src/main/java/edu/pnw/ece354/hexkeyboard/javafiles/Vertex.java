@@ -44,4 +44,8 @@ public class Vertex {
     {
         return new double[]{x,y};
     }
+    public String toString()
+    {
+        return String.format("Vertex (%f,%f)",x,y);
+    }
 }

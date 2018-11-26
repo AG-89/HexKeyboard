@@ -16,6 +16,8 @@ package edu.pnw.ece354.hexkeyboard;
         import edu.pnw.ece354.hexkeyboard.javafiles.*;
         import android.gesture.*;
 
+        import static android.app.PendingIntent.getActivity;
+
 public class MainActivity extends AppCompatActivity {
 
     private String TAG = MainActivity.class.getSimpleName();
@@ -116,6 +118,9 @@ public class MainActivity extends AppCompatActivity {
                     //C-4 (middle C) as default note
                     int notename_octave = 4+(int)Math.floor((double)noteindex/12.0);
                     Log.d(TAG, String.format("Note to play: (index %d) \'%s%d\'", noteindex, Scale_12EDO.getNoteNames()[notename_index], notename_octave));
+                    //note play code
+                    //move to seperate stream so activity doesn't hang
+                    Audio.playSound("C2.WAV",this, 1.0);
                 }
 
                 break;

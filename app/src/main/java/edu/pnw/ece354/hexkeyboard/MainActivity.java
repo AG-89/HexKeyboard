@@ -1,5 +1,6 @@
 package edu.pnw.ece354.hexkeyboard;
 
+        import android.content.Intent;
         import android.graphics.Point;
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
@@ -9,12 +10,17 @@ package edu.pnw.ece354.hexkeyboard;
         import android.graphics.Path;
         import android.content.Context;
 //import android.os.Bundle;
+        import android.support.v7.widget.Toolbar;
         import android.util.Log;
         import android.view.Display;
+        import android.view.Menu;
+        import android.view.MenuInflater;
+        import android.view.MenuItem;
         import android.view.MotionEvent;
         import android.view.View;
         import edu.pnw.ece354.hexkeyboard.javafiles.*;
         import android.gesture.*;
+        import android.widget.Toast;
 
         import static android.app.PendingIntent.getActivity;
 
@@ -57,6 +63,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
         setContentView(new MyView(this));
+
+        //Toolbar toolbar = findViewById(R.id.toolbar);
+        //setSupportActionBar(toolbar);
+        //toolbar.setTitle("Hexys");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.action_settings:
+                //settings
+                Toast.makeText(getApplicationContext(), "SETTINGS", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, Main2Activity.class);
+                startActivity(intent);
+                break;
+            case R.id.action_rescale:
+                //rescale
+                break;
+            default:
+                // unknown error
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

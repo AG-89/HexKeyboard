@@ -15,7 +15,21 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class Audio {
+public class Audio implements Runnable
+{
+    private HKAudioFile file_and_rate;
+    private Context context;
+
+    /**try this constructor for Runnable run() implementation
+     *
+     * @param far File & samplerate
+     * @param c context
+     */
+    public Audio(HKAudioFile far, Context c)
+    {
+        file_and_rate = far;
+        context = c;
+    }
 
     /**
      * Internal class to hold audio file information like a struct
@@ -57,7 +71,8 @@ public class Audio {
      * @param file_and_rate HKAudioFile that contains the filename and the samplerate modifier
      * @param context Activity context to be passed
      */
-    public static void playSound(HKAudioFile file_and_rate, Context context){
+    public static void playSound(HKAudioFile file_and_rate, Context context)
+    {
 
         double Rate = file_and_rate.getFrequency(); //actually the Fs rate, not frequency
         String filename = file_and_rate.getFileName();
@@ -89,6 +104,22 @@ public class Audio {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void run()
+    {
+        try
+        {
+            playSound(file_and_rate, context);
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            return;
         }
     }
 

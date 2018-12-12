@@ -162,7 +162,9 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG,String.format("Frequency (Hz) = %f",Scale_12EDO.noteIndexPitch(noteindex,A4)));
                     //audio playback part
                     //move to separate stream so activity doesn't hang
-                    Audio.playSound(Audio.getHKAudioFileFromNI(noteindex,Scale_12EDO,A4),this);
+                    Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,Scale_12EDO,A4),this));
+                    t1.start();
+
                 }
 
                 break;

@@ -1,28 +1,27 @@
 package edu.pnw.ece354.hexkeyboard;
 
-        import android.content.Intent;
-        import android.graphics.Point;
-        import android.support.v7.app.AppCompatActivity;
-        import android.os.Bundle;
-        import android.graphics.Canvas;
-        import android.graphics.Color;
-        import android.graphics.Paint;
-        import android.graphics.Path;
-        import android.content.Context;
+import android.content.Intent;
+import android.graphics.Point;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.content.Context;
 //import android.os.Bundle;
-        import android.support.v7.widget.Toolbar;
-        import android.util.Log;
-        import android.view.Display;
-        import android.view.Menu;
-        import android.view.MenuInflater;
-        import android.view.MenuItem;
-        import android.view.MotionEvent;
-        import android.view.View;
-        import edu.pnw.ece354.hexkeyboard.javafiles.*;
-        import android.gesture.*;
-        import android.widget.Toast;
+import android.util.Log;
+import android.view.Display;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import edu.pnw.ece354.hexkeyboard.javafiles.*;
 
-        import static android.app.PendingIntent.getActivity;
+import android.widget.Toast;
+
+import static android.app.PendingIntent.getActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -40,6 +39,10 @@ public class MainActivity extends AppCompatActivity {
     Hexagon[][] hexys = new Hexagon[numx*2+1][numy*2+1];
     double radius = 69.0;
     double apothem = (Math.sqrt(3.0) / 2.0) * radius;
+    Vertex mCenter;
+    float initialX, initialY; //for touch event
+
+    boolean panning = false;
 
     /**
      * Calculates the hexagons and their vertices but does not draw them.
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
-        setContentView(new MyView(this));
+        //setContentView(new MyView(this));
 
         //Toolbar toolbar = findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
@@ -77,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    //: menu items
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.action_settings:
@@ -87,6 +91,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_rescale:
                 //rescale
+                //switch modes
+                panning = !panning;
+                Log.d(TAG,String.format("panning set to %b",panning));
                 break;
             default:
                 // unknown error
@@ -104,34 +111,36 @@ public class MainActivity extends AppCompatActivity {
         display.getSize(size);
         int ScreenWidth = size.x;
         int ScreenHeight = size.y - 220; //fix later
-        Vertex mCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
+        mCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
         System.out.println(ScreenWidth);
         System.out.println(ScreenHeight);
 
         //create hexagon grid
         calcHexagonGrid(mCenter);
+        setContentView(new MyView(this));
+        initialX = (float)mCenter.getX();
+        initialY = (float)mCenter.getY();
     }
-
-    float initialX, initialY; //from touch event
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
         //mGestureDetector.onTouchEvent(event);
 
         int action = event.getActionMasked();
+        boolean down = false;
+
 
         switch (action) {
 
             case MotionEvent.ACTION_DOWN:
                 initialX = event.getX();
-                initialY = event.getY() - 220; //fix later
+                initialY = event.getY(); //fix later
 
-                Log.d(TAG, String.format("init coords: (%f, %f)",initialX,initialY));
-
-                Log.d(TAG, "Action was DOWN");
+                Log.d(TAG, String.format("Down init coords: (%f, %f)",initialX,initialY));
 
                 //check point inside which hexagon here
-                Vertex TouchV = new Vertex((double)initialX,(double)initialY);
+                Vertex TouchV = new Vertex((double)initialX,(double)initialY-220);
                 int[] TouchHexagonCoords = new int[2]; //integer coordinates of hexagon
                 boolean TouchHexagonMatch = false; //is inside ANY hexagon
                 Hexagon TouchHexagon = null;
@@ -146,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                if(TouchHexagonMatch) {
+                if(TouchHexagonMatch && !panning) {
                     //show hexagon vertices for debugging
                     Vertex[] v = TouchHexagon.getVertices();
                     for(Vertex vv : v)
@@ -170,12 +179,20 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "Action was MOVE");
+                if(panning) //only pan if set
+                {
+                    float moveX = event.getX();
+                    float moveY = event.getY();
+                    mCenter.setX(mCenter.getX() + moveX - initialX);
+                    mCenter.setY(mCenter.getY() + moveY - initialY);
+                    Log.d(TAG, String.format("init coords: (%.1f, %.1f)", initialX, initialY));
+                    Log.d(TAG, String.format("move coords: (%.1f, %.1f)", moveX, moveY));
+                    calcHexagonGrid(mCenter);
+                    setContentView(new MyView(this));
+                }
                 break;
 
             case MotionEvent.ACTION_UP:
-                float finalX = event.getX();
-                float finalY = event.getY();
 
                 Log.d(TAG, "Action was UP");
 
@@ -222,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onDraw(Canvas canvas)
         {
             super.onDraw(canvas);
+            //draw the Hexagons
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.WHITE);
             canvas.drawPaint(paint);
@@ -268,8 +286,8 @@ public class MainActivity extends AppCompatActivity {
                     paint.setTextSize(50);
                     //String s = String.format("(%d,%d)", x, y);
                     //nts please clean this copypaste code up later
-                        //C-4 (middle C) as default note
-                        int notename_octave = Scale_12EDO.noteIndexOctave(ni);
+                    //C-4 (middle C) as default note
+                    int notename_octave = Scale_12EDO.noteIndexOctave(ni);
                     String s = Scale_12EDO.getNoteNames()[nim] + notename_octave;
                     canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
                 }

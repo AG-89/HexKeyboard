@@ -9,9 +9,14 @@
 
     </item>
     <item
+        android:id="@+id/action_pan"
+        android:title="@string/pan"
+        app:showAsAction="never">
+
+    </item>
+    <item
         android:id="@+id/action_rescale"
         android:title="@string/rescale"
         app:showAsAction="never">
-
     </item>
 </menu>

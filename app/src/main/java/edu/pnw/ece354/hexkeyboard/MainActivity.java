@@ -1,3 +1,12 @@
+/*
+    Project:
+    Android Hexagon Keyboard App
+
+    Group Members:
+    Javier Campos
+    Ashlin Gibson
+ */
+
 package edu.pnw.ece354.hexkeyboard;
 
 import android.content.Intent;
@@ -34,15 +43,19 @@ public class MainActivity extends AppCompatActivity {
     double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
 
     //hexagons stored in 2d array
-    int numx = 4;
-    int numy = 7;
+    int numx = 10;
+    int numy = 12;
     Hexagon[][] hexys = new Hexagon[numx*2+1][numy*2+1];
     double radius = 69.0;
     double apothem = (Math.sqrt(3.0) / 2.0) * radius;
     Vertex mCenter;
+    Vertex trueCenter;
     float initialX, initialY; //for touch event
 
     boolean panning = false;
+    boolean rescaling = false;
+
+    Options options;
 
     /**
      * Calculates the hexagons and their vertices but does not draw them.
@@ -70,6 +83,14 @@ public class MainActivity extends AppCompatActivity {
         //Toolbar toolbar = findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
         //toolbar.setTitle("Hexys");
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int ScreenWidth = size.x;
+        int ScreenHeight = size.y - 220; //fix later
+        trueCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
+        mCenter = trueCenter;
     }
 
     @Override
@@ -89,15 +110,22 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, Main2Activity.class);
                 startActivity(intent);
                 break;
-            case R.id.action_rescale:
-                //rescale
-                //switch modes
+            case R.id.action_pan:
+                //pan mode
                 panning = !panning;
+                rescaling = false;
                 Log.d(TAG,String.format("panning set to %b",panning));
+                break;
+            case R.id.action_rescale:
+                //rescale mode
+                panning = false;
+                rescaling = !rescaling;
+                Log.d(TAG,String.format("rescaling set to %b",rescaling));
                 break;
             default:
                 // unknown error
         }
+        setContentView(new MyView(this)); //redraw
         return super.onOptionsItemSelected(item);
     }
 
@@ -106,14 +134,6 @@ public class MainActivity extends AppCompatActivity {
     {
         super.onResume();
         //get center of screen
-        Display display = getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
-        int ScreenWidth = size.x;
-        int ScreenHeight = size.y - 220; //fix later
-        mCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
-        System.out.println(ScreenWidth);
-        System.out.println(ScreenHeight);
 
         //create hexagon grid
         calcHexagonGrid(mCenter);
@@ -138,6 +158,10 @@ public class MainActivity extends AppCompatActivity {
                 initialY = event.getY(); //fix later
 
                 Log.d(TAG, String.format("Down init coords: (%f, %f)",initialX,initialY));
+                Intent intent = getIntent();
+                //String AnInstrument = intent.getStringExtra("AnInstrument");
+                String AnInstrument = intent.getStringExtra("AnInstrument");
+                Log.d(TAG, String.format("test: %s",AnInstrument));
 
                 //check point inside which hexagon here
                 Vertex TouchV = new Vertex((double)initialX,(double)initialY-220);
@@ -155,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-                if(TouchHexagonMatch && !panning) {
+                if(TouchHexagonMatch && !panning && !rescaling) {
                     //show hexagon vertices for debugging
                     Vertex[] v = TouchHexagon.getVertices();
                     for(Vertex vv : v)
@@ -179,14 +203,51 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case MotionEvent.ACTION_MOVE:
+                float moveX = event.getX();
+                float moveY = event.getY();
+                Log.d(TAG, String.format("init coords: (%.1f, %.1f)", initialX, initialY));
+                Log.d(TAG, String.format("move coords: (%.1f, %.1f)", moveX, moveY));
                 if(panning) //only pan if set
                 {
-                    float moveX = event.getX();
-                    float moveY = event.getY();
                     mCenter.setX(mCenter.getX() + moveX - initialX);
                     mCenter.setY(mCenter.getY() + moveY - initialY);
-                    Log.d(TAG, String.format("init coords: (%.1f, %.1f)", initialX, initialY));
-                    Log.d(TAG, String.format("move coords: (%.1f, %.1f)", moveX, moveY));
+                    //bounds
+                    if(mCenter.getX() > 5000.0)
+                    {
+                        mCenter.setX(5000.0);
+                    }
+                    if(mCenter.getX() < -5000.0)
+                    {
+                        mCenter.setX(-5000.0);
+                    }
+                    if(mCenter.getY() > 2000.0)
+                    {
+                        mCenter.setY(2000.0);
+                    }
+                    if(mCenter.getY() < -2000.0)
+                    {
+                        mCenter.setY(2000.0);
+                    }
+                    calcHexagonGrid(mCenter);
+                    setContentView(new MyView(this));
+                }
+                else if(rescaling) //only pan if set
+                {
+                    //how fast to scale
+                    double scalingfactor = -0.33;
+                    //uses each axis seperately. Top right is increase
+                    radius = radius + scalingfactor*(moveY - initialY);
+                    radius = radius + scalingfactor*(moveX - initialX);
+                    //bounds
+                    if(radius < 30.0)
+                    {
+                        radius = 30.0;
+                    }
+                    else if(radius > 200.0)
+                    {
+                        radius = 200.0;
+                    }
+                    apothem = (Math.sqrt(3.0) / 2.0) * radius;
                     calcHexagonGrid(mCenter);
                     setContentView(new MyView(this));
                 }
@@ -195,23 +256,6 @@ public class MainActivity extends AppCompatActivity {
             case MotionEvent.ACTION_UP:
 
                 Log.d(TAG, "Action was UP");
-
-                /*if (initialX < finalX) {
-                    Log.d(TAG, "Left to Right swipe performed");
-                }
-
-                if (initialX > finalX) {
-                    Log.d(TAG, "Right to Left swipe performed");
-                }
-
-                if (initialY < finalY) {
-                    Log.d(TAG, "Up to Down swipe performed");
-                }
-
-                if (initialY > finalY) {
-                    Log.d(TAG, "Down to Up swipe performed");
-                }*/
-
                 break;
 
             case MotionEvent.ACTION_CANCEL:
@@ -283,13 +327,27 @@ public class MainActivity extends AppCompatActivity {
                     path.close();
                     //draw text
                     paint.setColor(Color.BLACK);
-                    paint.setTextSize(50);
+                    paint.setTextSize((float)(radius * 0.75));
                     //String s = String.format("(%d,%d)", x, y);
                     //nts please clean this copypaste code up later
                     //C-4 (middle C) as default note
                     int notename_octave = Scale_12EDO.noteIndexOctave(ni);
                     String s = Scale_12EDO.getNoteNames()[nim] + notename_octave;
                     canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
+                    paint.setTextSize(100);
+                    if(panning)
+                    {
+                        s = "PANNING MODE";
+                    }
+                    else if(rescaling)
+                    {
+                        s = "RESCALING MODE";
+                    }
+                    else
+                    {
+                        s = "";
+                    }
+                    canvas.drawText(s, (float)50.0, (float)900.0, paint);
                 }
             }
         }

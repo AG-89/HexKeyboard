@@ -7,9 +7,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
-
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,11 +51,12 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
 
         List<String> categories4 = new ArrayList<String>();
         categories4.add("Scientific");
-        categories4.add("Note only");
+        categories4.add("Note Only");
 
         List<String> categories5 = new ArrayList<String>();
         categories5.add("Black & White");
-        categories5.add("Rainbow 5ths");
+        categories5.add("Green & White");
+        categories5.add("Random");
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories);
         ArrayAdapter<String> dataAdapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories2);
@@ -78,96 +76,88 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
         spinner4.setAdapter(dataAdapter4);
         spinner5.setAdapter(dataAdapter5);
 
-        //set option defaults on creation
-        options = new Options();
-        options.volume = 100.0;
-        options.instrument = "Piano";
-        options.keyDisplay = "Scientific";
-        options.noteLayout = "WH";
-        options.colorScheme = "B&W";
-        options.radius = 69.0;
-        options.musicScale = "12EDO";
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         options = (Options)getIntent().getSerializableExtra("options");
+
         //set options menu from passed options object
+
         //instrument
-        if(options.instrument.equals("Harpsichord"))
-        {
-            spinner.setSelection(1);
-        }
-        else
-        {
+        if(options.instrument.equals("Piano"))
             spinner.setSelection(0);
-        }
+        else
+            spinner.setSelection(1);
+
         //note layout
         if(options.noteLayout.equals("WH"))
-        {
             spinner2.setSelection(0);
-        }
         else
-        {
             spinner2.setSelection(1);
-        }
+
         //music scale
         if(options.musicScale.equals("12EDO"))
-        {
             spinner3.setSelection(0);
-        }
         else
-        {
             spinner3.setSelection(1);
-        }
+
         //key display
-        if(options.musicScale.equals("Scientific"))
-        {
+        if(options.keyDisplay.equals("Scientific"))
             spinner4.setSelection(0);
-        }
         else
-        {
             spinner4.setSelection(1);
-        }
+
         //color scheme
-        if(options.musicScale.equals("B&W"))
-        {
+        if(options.colorScheme.equals("B&W"))
             spinner5.setSelection(0);
-        }
-        else
-        {
+        else if(options.colorScheme.equals("G&W"))
             spinner5.setSelection(1);
-        }
+        else
+            spinner5.setSelection(2);
     }
 
-     public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
-     {
+     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
          String item = parent.getItemAtPosition(position).toString();
          //if we can get the name as string thats pretty good
-         System.out.println(parent.getId());
-         System.out.println(id);
-         System.out.println(item);
-         System.out.println(position);
-         //instrument
-         if(true) //get spinner id somehow
-         {
-             if(item.equals("Harpsichord"))
-             {
-                 options.instrument = "Harpsichord";
+
+             switch(item) {
+                 case "Harpsichord":
+                     options.instrument = "Harpsichord";
+                     break;
+                 case "Piano":
+                     options.instrument = "Piano";
+                     break;
+                 case "Wicki-Hayden":
+                     options.noteLayout = "WH";
+                     break;
+                 case "12-EDO":
+                     options.musicScale = "12EDO";
+                     break;
+                 case "Scientific":
+                     options.keyDisplay = "Scientific";
+                     break;
+                 case "Note Only":
+                     options.keyDisplay = "Note Only";
+                     break;
+                 case "Black & White":
+                     options.colorScheme = "B&W";
+                     break;
+                 case "Green & White":
+                     options.colorScheme = "G&W";
+                     break;
+                 case "Random":
+                     options.colorScheme = "Random";
+                     break;
              }
-             else
-             {
-                 options.instrument = "Piano";
-             }
-         }
-         System.out.println(options.instrument);
      }
 
     // Required to implement onNothingSelected as we implement AdapterView.OnItemSelectedListener
     // otherwise class must be declared abstract
-    public void onNothingSelected(AdapterView<?> arg0)
-    {
+    public void onNothingSelected(AdapterView<?> arg0) {
         // Do nothing
     }
 
@@ -176,7 +166,7 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
         super.onPause();
 
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("options",options);
+        intent.putExtra("options", options);
         startActivity(intent);
     }
 }

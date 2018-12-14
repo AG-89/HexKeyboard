@@ -18,7 +18,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.content.Context;
-//import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -26,13 +25,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+
+import java.util.Random;
+
 import edu.pnw.ece354.hexkeyboard.javafiles.*;
 
-import android.widget.Toast;
-
-import java.io.Serializable;
-
-import static android.app.PendingIntent.getActivity;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
     //music stuff
     MusicScale Scale_12EDO = new MusicScale(12);
     double A4 = 440.0; //A4 = 440 hz default
-    double C0 = A4 * Math.pow(2.0,(-9.0 / 12.0)) / 16.0; //12edo C0 from A4
-    double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
+    //double C0 = A4 * Math.pow(2.0,(-9.0 / 12.0)) / 16.0; //12edo C0 from A4
+    //double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
 
     //hexagons stored in 2d array
     int numx = 10;
@@ -60,6 +57,12 @@ public class MainActivity extends AppCompatActivity {
     boolean rescaling = false;
 
     Options options;
+
+    Random random = new Random();
+    int rand1 = random.nextInt(256*256*256);
+    String c1 = String.format("#%06x", rand1);
+    int rand2 = random.nextInt(256*256*256);
+    String c2 = String.format("#%06x", rand2);
 
     /**
      * Calculates the hexagons and their vertices but does not draw them.
@@ -96,29 +99,15 @@ public class MainActivity extends AppCompatActivity {
         trueCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
         mCenter = trueCenter;
 
+        //retrieve options from passed options object else set default
         options = (Options)getIntent().getSerializableExtra("options");
-        //retrieve options from passed options object
-        if(options == null) //else set default
-        {
-            System.out.println("reset object");
-            options = new Options();
-            options.volume = 100.0;
-            options.instrument = "Piano";
-            options.keyDisplay = "Scientific";
-            options.noteLayout = "WH";
-            options.colorScheme = "B&W";
-            options.radius = 69.0;
-            options.musicScale = "12EDO";
-            options.mCenterx = trueCenter.getX();
-            options.mCentery = trueCenter.getY();
-        }
-        System.out.println(options.instrument);
-        radius = options.radius;
-        apothem = (Math.sqrt(3.0) / 2.0) * radius;
+
+        if(options == null) //else set default options
+            options = new Options(trueCenter.getX(), trueCenter.getY());
+
+        apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
         mCenter = new Vertex(options.mCenterx,options.mCentery);
-        //set init coords to retrieved center
-        initialX = (float)mCenter.getX();
-        initialY = (float)mCenter.getY();
+
         //create hexagon grid
         calcHexagonGrid(mCenter);
         setContentView(new MyView(this));
@@ -132,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    //: menu items
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.action_settings:
@@ -161,32 +149,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume()
-    {
+    protected void onResume() {
         super.onResume();
+
+        //retrieve options from passed options object else set default
         options = (Options)getIntent().getSerializableExtra("options");
-        //retrieve options from passed options object
-        if(options == null) //else set default
-        {
-            System.out.println("reset object");
-            options = new Options();
-            options.volume = 100.0;
-            options.instrument = "Piano";
-            options.keyDisplay = "Scientific";
-            options.noteLayout = "WH";
-            options.colorScheme = "B&W";
-            options.radius = 69.0;
-            options.musicScale = "12EDO";
-            options.mCenterx = trueCenter.getX();
-            options.mCentery = trueCenter.getY();
-        }
-        System.out.println(options.instrument);
-        radius = options.radius;
-        apothem = (Math.sqrt(3.0) / 2.0) * radius;
+
+        if(options == null) //else set default options
+            options = new Options(trueCenter.getX(), trueCenter.getY());
+
+        apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
         mCenter = new Vertex(options.mCenterx,options.mCentery);
-        //set init coords to retrieved center
-        initialX = (float)mCenter.getX();
-        initialY = (float)mCenter.getY();
+
         //create hexagon grid
         calcHexagonGrid(mCenter);
         setContentView(new MyView(this));
@@ -199,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
         //mGestureDetector.onTouchEvent(event);
 
         int action = event.getActionMasked();
-        boolean down = false;
+        //boolean down = false;
 
 
         switch (action) {
@@ -228,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
                 if(TouchHexagonMatch && !panning && !rescaling) {
                     //show hexagon vertices for debugging
-                    Vertex[] v = TouchHexagon.getVertices();
+                    //Vertex[] v = TouchHexagon.getVertices();
                     /*for(Vertex vv : v)
                     {
                         System.out.println(vv);
@@ -357,47 +331,59 @@ public class MainActivity extends AppCompatActivity {
                         //fill
                         path.lineTo((float) v[1].getX(), (float) v[1].getY());
                         //line borders
-                        paint.setColor(Color.parseColor("#000000"));
                         paint.setStrokeWidth(10);
                         canvas.drawLine((float) v[0].getX(), (float) v[0].getY(), (float) v[1].getX(), (float) v[1].getY(), paint);
                     }
-                    //hash set later for extention
+                    //hash set later for extension
                     int ni = hexagon.getNoteIndex(); //note index
                     int nim = Scale_12EDO.noteIndexToScaleIndex(ni); //note index mod 12 and shifted for C
                     //12edo only for now
-                    if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) //0 is C#
-                    {
-                        paint.setColor(Color.parseColor("#696969"));
+
+
+                    // Keyboard Color
+                    switch (options.colorScheme) {
+                        case "B&W":
+                            c1 = "#696969"; c2 = "#F8F8F8";
+                            break;
+                        case "G&W":
+                            c1 = "#66ff33"; c2 = "#F8F8F8";
+                            break;
                     }
-                    else
-                    {
-                        paint.setColor(Color.parseColor("#F8F8F8"));
+
+                    if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
+                        paint.setColor(Color.parseColor(c1));
                     }
+                    else {
+                        paint.setColor(Color.parseColor(c2));
+                    }
+
                     canvas.drawPath(path, paint);
                     path.close();
                     //draw text
                     paint.setColor(Color.BLACK);
                     paint.setTextSize((float)(radius * 0.75));
-                    //String s = String.format("(%d,%d)", x, y);
-                    //nts please clean this copypaste code up later
-                    //C-4 (middle C) as default note
+
+                    // Keyboard Display
                     int notename_octave = Scale_12EDO.noteIndexOctave(ni);
-                    String s = Scale_12EDO.getNoteNames()[nim] + notename_octave;
+                    String s = Scale_12EDO.getNoteNames()[nim];
+
+                    // Writes the correct notation (only Scientific or Note Only is supported)
+                    if(options.keyDisplay.equals("Scientific"))
+                        s += notename_octave;
+
                     canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
+
                     paint.setTextSize(100);
+
                     if(panning)
-                    {
                         s = "PANNING MODE";
-                    }
                     else if(rescaling)
-                    {
                         s = "RESCALING MODE";
-                    }
                     else
-                    {
                         s = "";
-                    }
+
                     canvas.drawText(s, (float)50.0, (float)900.0, paint);
+
                 }
             }
         }

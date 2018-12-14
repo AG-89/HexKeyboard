@@ -29,4 +29,10 @@ public class Options implements Serializable
         mCentery = 0.0;
     }
 
+    public Options(double mCenterx, double mCentery) {
+        this();
+        this.mCenterx = mCenterx;
+        this.mCentery = mCentery;
+    }
+
 }

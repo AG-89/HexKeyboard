@@ -30,6 +30,8 @@ import edu.pnw.ece354.hexkeyboard.javafiles.*;
 
 import android.widget.Toast;
 
+import java.io.Serializable;
+
 import static android.app.PendingIntent.getActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,11 +48,13 @@ public class MainActivity extends AppCompatActivity {
     int numx = 10;
     int numy = 12;
     Hexagon[][] hexys = new Hexagon[numx*2+1][numy*2+1];
+    float initialX, initialY; //for touch event
+
+    //options used
     double radius = 69.0;
     double apothem = (Math.sqrt(3.0) / 2.0) * radius;
     Vertex mCenter;
     Vertex trueCenter;
-    float initialX, initialY; //for touch event
 
     boolean panning = false;
     boolean rescaling = false;
@@ -91,6 +95,33 @@ public class MainActivity extends AppCompatActivity {
         int ScreenHeight = size.y - 220; //fix later
         trueCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
         mCenter = trueCenter;
+
+        options = (Options)getIntent().getSerializableExtra("options");
+        //retrieve options from passed options object
+        if(options == null) //else set default
+        {
+            System.out.println("reset object");
+            options = new Options();
+            options.volume = 100.0;
+            options.instrument = "Piano";
+            options.keyDisplay = "Scientific";
+            options.noteLayout = "WH";
+            options.colorScheme = "B&W";
+            options.radius = 69.0;
+            options.musicScale = "12EDO";
+            options.mCenterx = trueCenter.getX();
+            options.mCentery = trueCenter.getY();
+        }
+        System.out.println(options.instrument);
+        radius = options.radius;
+        apothem = (Math.sqrt(3.0) / 2.0) * radius;
+        mCenter = new Vertex(options.mCenterx,options.mCentery);
+        //set init coords to retrieved center
+        initialX = (float)mCenter.getX();
+        initialY = (float)mCenter.getY();
+        //create hexagon grid
+        calcHexagonGrid(mCenter);
+        setContentView(new MyView(this));
     }
 
     @Override
@@ -106,12 +137,12 @@ public class MainActivity extends AppCompatActivity {
         switch(item.getItemId()) {
             case R.id.action_settings:
                 //settings
-                Toast.makeText(getApplicationContext(), "SETTINGS", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(this, Main2Activity.class);
+                intent.putExtra("options",options);
                 startActivity(intent);
                 break;
             case R.id.action_pan:
-                //pan mode
+                //pan modez
                 panning = !panning;
                 rescaling = false;
                 Log.d(TAG,String.format("panning set to %b",panning));
@@ -133,13 +164,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume()
     {
         super.onResume();
-        //get center of screen
-
+        options = (Options)getIntent().getSerializableExtra("options");
+        //retrieve options from passed options object
+        if(options == null) //else set default
+        {
+            System.out.println("reset object");
+            options = new Options();
+            options.volume = 100.0;
+            options.instrument = "Piano";
+            options.keyDisplay = "Scientific";
+            options.noteLayout = "WH";
+            options.colorScheme = "B&W";
+            options.radius = 69.0;
+            options.musicScale = "12EDO";
+            options.mCenterx = trueCenter.getX();
+            options.mCentery = trueCenter.getY();
+        }
+        System.out.println(options.instrument);
+        radius = options.radius;
+        apothem = (Math.sqrt(3.0) / 2.0) * radius;
+        mCenter = new Vertex(options.mCenterx,options.mCentery);
+        //set init coords to retrieved center
+        initialX = (float)mCenter.getX();
+        initialY = (float)mCenter.getY();
         //create hexagon grid
         calcHexagonGrid(mCenter);
         setContentView(new MyView(this));
-        initialX = (float)mCenter.getX();
-        initialY = (float)mCenter.getY();
+
     }
 
     @Override
@@ -158,10 +209,6 @@ public class MainActivity extends AppCompatActivity {
                 initialY = event.getY(); //fix later
 
                 Log.d(TAG, String.format("Down init coords: (%f, %f)",initialX,initialY));
-                Intent intent = getIntent();
-                //String AnInstrument = intent.getStringExtra("AnInstrument");
-                String AnInstrument = intent.getStringExtra("AnInstrument");
-                Log.d(TAG, String.format("test: %s",AnInstrument));
 
                 //check point inside which hexagon here
                 Vertex TouchV = new Vertex((double)initialX,(double)initialY-220);
@@ -182,10 +229,10 @@ public class MainActivity extends AppCompatActivity {
                 if(TouchHexagonMatch && !panning && !rescaling) {
                     //show hexagon vertices for debugging
                     Vertex[] v = TouchHexagon.getVertices();
-                    for(Vertex vv : v)
+                    /*for(Vertex vv : v)
                     {
                         System.out.println(vv);
-                    }
+                    }*/
 
                     Log.d(TAG, String.format("Clicked in hexagon: (%d, %d)", TouchHexagonCoords[0], TouchHexagonCoords[1]));
                     int noteindex = TouchHexagon.getNoteIndex();
@@ -195,7 +242,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG,String.format("Frequency (Hz) = %f",Scale_12EDO.noteIndexPitch(noteindex,A4)));
                     //audio playback part
                     //move to separate stream so activity doesn't hang
-                    Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,Scale_12EDO,A4),this));
+                    System.out.println(options.instrument);
+                    Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,Scale_12EDO,A4,options.instrument),this));
                     t1.start();
 
                 }
@@ -209,8 +257,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, String.format("move coords: (%.1f, %.1f)", moveX, moveY));
                 if(panning) //only pan if set
                 {
-                    mCenter.setX(mCenter.getX() + moveX - initialX);
-                    mCenter.setY(mCenter.getY() + moveY - initialY);
+                    //how much to pan
+                    double panfactor = 0.5;
+                    mCenter.setX(mCenter.getX() + panfactor*(moveX - initialX));
+                    mCenter.setY(mCenter.getY() + panfactor*(moveY - initialY));
                     //bounds
                     if(mCenter.getX() > 5000.0)
                     {
@@ -234,9 +284,9 @@ public class MainActivity extends AppCompatActivity {
                 else if(rescaling) //only pan if set
                 {
                     //how fast to scale
-                    double scalingfactor = -0.33;
+                    double scalingfactor = 0.1;
                     //uses each axis seperately. Top right is increase
-                    radius = radius + scalingfactor*(moveY - initialY);
+                    radius = radius + -scalingfactor*(moveY - initialY);
                     radius = radius + scalingfactor*(moveX - initialX);
                     //bounds
                     if(radius < 30.0)

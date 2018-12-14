@@ -8,32 +8,41 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.pnw.ece354.hexkeyboard.javafiles.*;
+
 public class Main2Activity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    Intent i;
+    Options options;
+    Spinner spinner, spinner2, spinner3, spinner4, spinner5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
 
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        spinner = (Spinner) findViewById(R.id.spinner);
         spinner.setOnItemSelectedListener((AdapterView.OnItemSelectedListener) this);
 
-        Spinner spinner2 = (Spinner) findViewById(R.id.spinner2);
+        spinner2 = (Spinner) findViewById(R.id.spinner2);
         spinner2.setOnItemSelectedListener((AdapterView.OnItemSelectedListener) this);
 
-        Spinner spinner3 = (Spinner) findViewById(R.id.spinner3);
+        spinner3 = (Spinner) findViewById(R.id.spinner3);
         spinner3.setOnItemSelectedListener((AdapterView.OnItemSelectedListener) this);
+
+        spinner4 = (Spinner) findViewById(R.id.spinner4);
+        spinner4.setOnItemSelectedListener((AdapterView.OnItemSelectedListener) this);
+
+        spinner5 = (Spinner) findViewById(R.id.spinner5);
+        spinner5.setOnItemSelectedListener((AdapterView.OnItemSelectedListener) this);
 
         List<String> categories = new ArrayList<String>();
         categories.add("Piano");
-        categories.add("Harpischord");
-        categories.add("Orchestra");
-        categories.add("more coming soon...");
+        categories.add("Harpsichord");
 
         List<String> categories2 = new ArrayList<String>();
         categories2.add("Wicki-Hayden");
@@ -41,32 +50,118 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
 
         List<String> categories3 = new ArrayList<String>();
         categories3.add("12-EDO");
-        categories3.add("work in progress");
+        categories3.add("Just-5lim w/ mean m2 & M7");
+
+        List<String> categories4 = new ArrayList<String>();
+        categories4.add("Scientific");
+        categories4.add("Note only");
+
+        List<String> categories5 = new ArrayList<String>();
+        categories5.add("Black & White");
+        categories5.add("Rainbow 5ths");
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories);
         ArrayAdapter<String> dataAdapter2 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories2);
         ArrayAdapter<String> dataAdapter3 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories3);
+        ArrayAdapter<String> dataAdapter4 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories4);
+        ArrayAdapter<String> dataAdapter5 = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories5);
 
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         dataAdapter2.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         dataAdapter3.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dataAdapter4.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        dataAdapter5.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         spinner.setAdapter(dataAdapter);
         spinner2.setAdapter(dataAdapter2);
         spinner3.setAdapter(dataAdapter3);
+        spinner4.setAdapter(dataAdapter4);
+        spinner5.setAdapter(dataAdapter5);
+
+        //set option defaults on creation
+        options = new Options();
+        options.volume = 100.0;
+        options.instrument = "Piano";
+        options.keyDisplay = "Scientific";
+        options.noteLayout = "WH";
+        options.colorScheme = "B&W";
+        options.radius = 69.0;
+        options.musicScale = "12EDO";
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        options = (Options)getIntent().getSerializableExtra("options");
+        //set options menu from passed options object
+        //instrument
+        if(options.instrument.equals("Harpsichord"))
+        {
+            spinner.setSelection(1);
+        }
+        else
+        {
+            spinner.setSelection(0);
+        }
+        //note layout
+        if(options.noteLayout.equals("WH"))
+        {
+            spinner2.setSelection(0);
+        }
+        else
+        {
+            spinner2.setSelection(1);
+        }
+        //music scale
+        if(options.musicScale.equals("12EDO"))
+        {
+            spinner3.setSelection(0);
+        }
+        else
+        {
+            spinner3.setSelection(1);
+        }
+        //key display
+        if(options.musicScale.equals("Scientific"))
+        {
+            spinner4.setSelection(0);
+        }
+        else
+        {
+            spinner4.setSelection(1);
+        }
+        //color scheme
+        if(options.musicScale.equals("B&W"))
+        {
+            spinner5.setSelection(0);
+        }
+        else
+        {
+            spinner5.setSelection(1);
+        }
     }
 
      public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
      {
          String item = parent.getItemAtPosition(position).toString();
-         Toast.makeText(parent.getContext(), "Selected: " + item, Toast.LENGTH_SHORT).show();
-
-         i = new Intent(this, MainActivity.class);
-
-         //Bundle bundle = new Bundle();
-         //bundle.putString("AnInstrument", item);
-
-         i.putExtra("AnInstrument", item);
+         //if we can get the name as string thats pretty good
+         System.out.println(parent.getId());
+         System.out.println(id);
+         System.out.println(item);
+         System.out.println(position);
+         //instrument
+         if(true) //get spinner id somehow
+         {
+             if(item.equals("Harpsichord"))
+             {
+                 options.instrument = "Harpsichord";
+             }
+             else
+             {
+                 options.instrument = "Piano";
+             }
+         }
+         System.out.println(options.instrument);
      }
 
     // Required to implement onNothingSelected as we implement AdapterView.OnItemSelectedListener
@@ -79,6 +174,9 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
     @Override
     protected void onPause() {
         super.onPause();
-        startActivity(i);
+
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra("options",options);
+        startActivity(intent);
     }
 }

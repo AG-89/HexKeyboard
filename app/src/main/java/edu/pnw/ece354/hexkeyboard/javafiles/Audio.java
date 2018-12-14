@@ -68,19 +68,19 @@ public class Audio implements Runnable
 
     /**
      * Play a sound file from assets folder.
-     * @param file_and_rate HKAudioFile that contains the filename and the samplerate modifier
+     * @param fileinfo HKAudioFile that contains the filename and the samplerate modifier
      * @param context Activity context to be passed
      */
-    public static void playSound(HKAudioFile file_and_rate, Context context)
+    public static void playSound(HKAudioFile fileinfo, Context context)
     {
 
-        double Rate = file_and_rate.getFrequency(); //actually the Fs rate, not frequency
-        String filename = file_and_rate.getFileName();
+        double Rate = fileinfo.getFrequency(); //actually the Fs rate, not frequency
+        String filename = fileinfo.getFileName();
 
         int Fs_default = 44100;
         int Fs = (int)Math.round(Fs_default * Rate); //samplerate
         int minBufferSize = AudioTrack.getMinBufferSize(Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        int bufferSize = 512;
+        int bufferSize = 2048;
         //using AudioTrack allows samplerate change without going up an API level
         AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_VOICE_CALL, Fs, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
 
@@ -124,25 +124,37 @@ public class Audio implements Runnable
     }
 
     //make the files, may be temporary code idk
-    public static HKAudioFile[] generateFileList()
+    public static HKAudioFile[] generateFileList(String instrument)
     {
         final double C4 = 440.0 * Math.pow(2.0,(-9.0 / 12.0));
 
-        HKAudioFile[] files = new HKAudioFile[8];
-        for(int x = 0; x < 8; x++)
+        HKAudioFile[] files;
+
+        if(instrument.equals("Piano"))
         {
-            //the samples I used are an octave number lower
-            int xa = x-3; //adjusted x starting at -3
-            //.WAV is case-sensitive...
-            files[x] = new HKAudioFile("C" + Integer.toString(x+2) + ".WAV", 12*xa, C4 * Math.pow(2.0,(double)xa), "Piano");
+            files = new HKAudioFile[8];
+            for (int x = 0; x < 8; x++) {
+                int xa = x - 3; //adjusted x starting at -3
+                //.WAV is case-sensitive...
+                files[x] = new HKAudioFile("C" + Integer.toString(x + 1) + ".WAV", 12 * xa, C4 * Math.pow(2.0, (double)xa), "Piano");
+            }
+        }
+        else// if(instrument.equals("Harpsichord"))
+        {
+            files = new HKAudioFile[7];
+            for (int x = 0; x < 7; x++) {
+                int xa = x - 4; //adjusted x starting at -3
+                //.WAV is case-sensitive...
+                files[x] = new HKAudioFile("HC" + Integer.toString(x + 1) + ".WAV", 12 * xa, C4 * Math.pow(2.0, (double)xa), "Harpsichord");
+            }
         }
         return files;
     }
 
     //get HKAudioFile of closest note index
-    public static HKAudioFile getHKAudioFileFromNI(int ni, MusicScale scale, double A4)
+    public static HKAudioFile getHKAudioFileFromNI(int ni, MusicScale scale, double A4, String instrument)
     {
-        HKAudioFile[] files = generateFileList(); //get the asset file information
+        HKAudioFile[] files = generateFileList(instrument); //get the asset file information
 
         double f = scale.noteIndexPitch(ni,A4); //get input frequency
 

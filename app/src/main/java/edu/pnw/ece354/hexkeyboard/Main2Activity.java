@@ -47,7 +47,7 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
 
         List<String> categories3 = new ArrayList<String>();
         categories3.add("12-EDO");
-        categories3.add("Just-5lim w/ mean m2 & M7");
+        categories3.add("Just-5lim");
 
         List<String> categories4 = new ArrayList<String>();
         categories4.add("Scientific");
@@ -56,6 +56,7 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
         List<String> categories5 = new ArrayList<String>();
         categories5.add("Black & White");
         categories5.add("Green & White");
+        categories5.add("Rainbow 5ths");
         categories5.add("Random");
 
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, categories);
@@ -115,44 +116,53 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
             spinner5.setSelection(0);
         else if(options.colorScheme.equals("G&W"))
             spinner5.setSelection(1);
-        else
+        else if(options.colorScheme.equals("Rainbow 5ths"))
             spinner5.setSelection(2);
+        else
+            spinner5.setSelection(3);
     }
 
      public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
          String item = parent.getItemAtPosition(position).toString();
-         //if we can get the name as string thats pretty good
-
-             switch(item) {
-                 case "Harpsichord":
-                     options.instrument = "Harpsichord";
-                     break;
-                 case "Piano":
-                     options.instrument = "Piano";
-                     break;
-                 case "Wicki-Hayden":
-                     options.noteLayout = "WH";
-                     break;
-                 case "12-EDO":
-                     options.musicScale = "12EDO";
-                     break;
-                 case "Scientific":
-                     options.keyDisplay = "Scientific";
-                     break;
-                 case "Note Only":
-                     options.keyDisplay = "Note Only";
-                     break;
-                 case "Black & White":
-                     options.colorScheme = "B&W";
-                     break;
-                 case "Green & White":
-                     options.colorScheme = "G&W";
-                     break;
-                 case "Random":
-                     options.colorScheme = "Random";
-                     break;
-             }
+         //def not the preferred method but it functions here at least...
+         switch(item) {
+             case "Harpsichord":
+                 options.instrument = "Harpsichord";
+                 break;
+             case "Piano":
+                 options.instrument = "Piano";
+                 break;
+             case "Wicki-Hayden":
+                 options.noteLayout = "WH";
+                 break;
+             case "12-EDO":
+                 options.musicScale = "12EDO";
+                 break;
+             case "Just-5lim":
+                 options.musicScale = "Just-5lim";
+                 break;
+             case "Scientific":
+                 options.keyDisplay = "Scientific";
+                 break;
+             case "Note Only":
+                 options.keyDisplay = "Note Only";
+                 break;
+             case "Black & White":
+                 options.colorScheme = "B&W";
+                 break;
+             case "Green & White":
+                 options.colorScheme = "G&W";
+                 break;
+             case "Rainbow 5ths":
+                 options.colorScheme = "Rainbow 5ths";
+                 break;
+             case "Random":
+                 options.colorScheme = "Random";
+                 break;
+             default:
+                 break;
+         }
      }
 
     // Required to implement onNothingSelected as we implement AdapterView.OnItemSelectedListener

@@ -37,8 +37,12 @@ public class MainActivity extends AppCompatActivity {
 
     //music stuff
     MusicScale Scale_12EDO = new MusicScale(12);
+    MusicScale Scale_Just5lim = new MusicScale(new String[]{"Db","D-","Eb","E-","F-","F#","G-","Ab","A-","Bb","B-","C-"},
+                                            new double[]{16.0/15,9.0/8,6.0/5,5.0/4,4.0/3,45.0/32,3.0/2,8.0/5,5.0/3,16.0/9,15.0/8,2.0/1});
+
+    //reference pitches
     double A4 = 440.0; //A4 = 440 hz default
-    //double C0 = A4 * Math.pow(2.0,(-9.0 / 12.0)) / 16.0; //12edo C0 from A4
+    double C0 = A4 * Math.pow(2.0,(-9.0 / 12.0)) / 16.0; //12edo C0 from A4
     //double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
 
     //hexagons stored in 2d array
@@ -57,12 +61,6 @@ public class MainActivity extends AppCompatActivity {
     boolean rescaling = false;
 
     Options options;
-
-    Random random = new Random();
-    int rand1 = random.nextInt(256*256*256);
-    String c1 = String.format("#%06x", rand1);
-    int rand2 = random.nextInt(256*256*256);
-    String c2 = String.format("#%06x", rand2);
 
     /**
      * Calculates the hexagons and their vertices but does not draw them.
@@ -217,7 +215,17 @@ public class MainActivity extends AppCompatActivity {
                     //audio playback part
                     //move to separate stream so activity doesn't hang
                     System.out.println(options.instrument);
-                    Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,Scale_12EDO,A4,options.instrument),this));
+
+                    MusicScale scaletoplay;
+                    if(options.musicScale.equals("Just-5lim"))
+                    {
+                        scaletoplay = Scale_Just5lim;
+                    }
+                    else
+                    {
+                        scaletoplay = Scale_12EDO;
+                    }
+                    Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,scaletoplay,A4,options.instrument),this));
                     t1.start();
 
                 }
@@ -294,23 +302,30 @@ public class MainActivity extends AppCompatActivity {
         return super.onTouchEvent(event);
     }
 
+    //view to draw: hex grid
     public class MyView extends View {
         Paint paint;
+        Random random = new Random();
+        //tertiary rainbow colors (12 = 3*2*2)
+        String[] c_rainbow = {"FF0000", "FF8000", "FFFF00", "80FF00", "00FF00", "00FF80",
+                                "00FFFF", "0080FF", "0000FF", "8000FF", "FF00FF", "FF0080"};
+        Path path = new Path();
 
         public MyView(Context context) {
             super(context);
             paint = new Paint();
         }
 
-
         @Override
         protected void onDraw(Canvas canvas)
         {
+            System.out.println("test: drew");
             super.onDraw(canvas);
             //draw the Hexagons
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.WHITE);
             canvas.drawPaint(paint);
+
 
             for (Hexagon[] hexagon_row : hexys)
             {
@@ -321,8 +336,8 @@ public class MainActivity extends AppCompatActivity {
                     int x = coords[0];
                     int y = coords[1];
 
-                    Path path = new Path();
-                    path.setFillType(Path.FillType.EVEN_ODD);
+                    path.reset();
+                    path.setFillType(Path.FillType.EVEN_ODD); //not important for this application
                     Vertex[] vfirst = lineSegs[0].getVertices();
                     path.moveTo((float) vfirst[0].getX(), (float) vfirst[0].getY());
                     for (LineSeg l : lineSegs) {
@@ -339,53 +354,77 @@ public class MainActivity extends AppCompatActivity {
                     int nim = Scale_12EDO.noteIndexToScaleIndex(ni); //note index mod 12 and shifted for C
                     //12edo only for now
 
+                    String c1, c2;
+
 
                     // Keyboard Color
                     switch (options.colorScheme) {
-                        case "B&W":
+                        case "B&W": //black & white
                             c1 = "#696969"; c2 = "#F8F8F8";
+                            if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
+                                paint.setColor(Color.parseColor(c1));
+                            }
+                            else {
+                                paint.setColor(Color.parseColor(c2));
+                            }
                             break;
-                        case "G&W":
+                        case "G&W": //green & white
                             c1 = "#66ff33"; c2 = "#F8F8F8";
+                            if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
+                                paint.setColor(Color.parseColor(c1));
+                            }
+                            else {
+                                paint.setColor(Color.parseColor(c2));
+                            }
                             break;
-                    }
-
-                    if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
-                        paint.setColor(Color.parseColor(c1));
-                    }
-                    else {
-                        paint.setColor(Color.parseColor(c2));
+                        case "Rainbow 5ths": //rainbow 5ths
+                            paint.setColor(Color.parseColor(c_rainbow[(((nim+1) % 12) * 7) % 12]));
+                            break;
+                        case "Random": //random colors
+                            int rand1 = random.nextInt(256*256*256);
+                            c1 = String.format("#%06x", rand1);
+                            paint.setColor(Color.parseColor(c1));
+                            break;
+                        default: //default all white just in case
+                            c1 = "FFFFFF";
+                            paint.setColor(Color.parseColor(c1));
+                            break;
                     }
 
                     canvas.drawPath(path, paint);
                     path.close();
-                    //draw text
                     paint.setColor(Color.BLACK);
+                    //scale text based on radius
                     paint.setTextSize((float)(radius * 0.75));
 
-                    // Keyboard Display
+                    //Note name Display
                     int notename_octave = Scale_12EDO.noteIndexOctave(ni);
                     String s = Scale_12EDO.getNoteNames()[nim];
 
-                    // Writes the correct notation (only Scientific or Note Only is supported)
+                    //Current options implemented: Note only & Scientific
+                    //Always label note, but Scientific adds octave number as well
                     if(options.keyDisplay.equals("Scientific"))
+                    {
                         s += notename_octave;
-
-                    canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
-
-                    paint.setTextSize(100);
-
-                    if(panning)
-                        s = "PANNING MODE";
-                    else if(rescaling)
-                        s = "RESCALING MODE";
-                    else
-                        s = "";
-
-                    canvas.drawText(s, (float)50.0, (float)900.0, paint);
-
+                        canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
+                    }
+                    else //note only
+                    {
+                        canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 2.0/4.0), (float) hexagon.getCenter().getY(), paint);
+                    }
                 }
             }
+            String s;
+            //pan & resize mode notifier
+            paint.setTextSize(100);
+            if(panning)
+                s = "PANNING MODE";
+            else if(rescaling)
+                s = "RESCALING MODE";
+            else
+                s = "";
+
+            canvas.drawText(s, (float)50.0, (float)900.0, paint);
         }
     }
 }

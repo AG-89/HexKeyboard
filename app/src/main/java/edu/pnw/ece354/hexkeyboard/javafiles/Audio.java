@@ -143,7 +143,7 @@ public class Audio implements Runnable
         {
             files = new HKAudioFile[7];
             for (int x = 0; x < 7; x++) {
-                int xa = x - 4; //adjusted x starting at -3
+                int xa = x - 3; //adjusted x starting at -3
                 //.WAV is case-sensitive...
                 files[x] = new HKAudioFile("HC" + Integer.toString(x + 1) + ".WAV", 12 * xa, C4 * Math.pow(2.0, (double)xa), "Harpsichord");
             }

@@ -17,7 +17,7 @@ public class PointInPolygon
     {
         double val = (q.getY() - p.getY()) * (r.getX() - q.getX()) - (q.getX() - p.getX()) * (r.getY() - q.getY());
 
-        if (val < 0.0001) // ~== 0 for float
+        if (Math.abs(val) < 0.0001) // ~== 0 for float
             return 0;
         return (val > 0) ? 1 : 2;
     }

@@ -59,6 +59,16 @@ public class MusicScale {
         return pitches;
     }
 
+    //override values from constructor
+    public void setNoteNames(String[] nn)
+    {
+        notenames = nn;
+    }
+    public void setPitches(double[] p)
+    {
+        pitches = p;
+    }
+
     /**
      * Maps a note index to a 12EDO scale index, stripping octave info
      * @param noteIndex

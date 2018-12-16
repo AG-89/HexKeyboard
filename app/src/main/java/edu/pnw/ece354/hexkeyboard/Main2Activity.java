@@ -1,3 +1,11 @@
+/*
+    Project:
+    Android Hexagon Keyboard App
+
+    Group Members:
+    Javier Campos
+    Ashlin Gibson
+ */
 package edu.pnw.ece354.hexkeyboard;
 
 import android.content.Intent;
@@ -43,7 +51,7 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
 
         List<String> categories2 = new ArrayList<String>();
         categories2.add("Wicki-Hayden");
-        categories2.add("more coming soon... maybe");
+        categories2.add("Janko");
 
         List<String> categories3 = new ArrayList<String>();
         categories3.add("12-EDO");
@@ -135,6 +143,9 @@ public class Main2Activity extends AppCompatActivity implements AdapterView.OnIt
                  break;
              case "Wicki-Hayden":
                  options.noteLayout = "WH";
+                 break;
+             case "Janko":
+                 options.noteLayout = "Janko";
                  break;
              case "12-EDO":
                  options.musicScale = "12EDO";

@@ -35,6 +35,9 @@ public class MainActivity extends AppCompatActivity {
 
     private String TAG = MainActivity.class.getSimpleName();
 
+    int ScreenWidth;
+    int ScreenHeight;
+
     //music stuff
     MusicScale Scale_12EDO = new MusicScale(12);
     MusicScale Scale_Just5lim = new MusicScale(new String[]{"Db","D-","Eb","E-","F-","F#","G-","Ab","A-","Bb","B-","C-"},
@@ -46,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
     //double C0_just = A4 * (3.0/5.0) / 16.0; //just C0 from A4
 
     //hexagons stored in 2d array
-    int numx = 10;
-    int numy = 12;
+    int numx = 20;
+    int numy = 10;
     Hexagon[][] hexys = new Hexagon[numx*2+1][numy*2+1];
     float initialX, initialY; //for touch event
 
@@ -66,14 +69,29 @@ public class MainActivity extends AppCompatActivity {
      * Calculates the hexagons and their vertices but does not draw them.
      * @param ScreenCenter Coordinates for the center of the drawing area
      */
-    void calcHexagonGrid(Vertex ScreenCenter)
+    void calcHexagonGrid(Vertex ScreenCenter, String noteLayout)
     {
         for (int x = -numx; x <= numx; x++) {
             for (int y = -numy; y <= numy; y++) {
                 int[] coords = new int[]{x, y};
-                Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2.0) * apothem, ScreenCenter.getY() - radius * y * 1.5);
-                //wicki-hayden
-                int noteindex = coords[1]*6 - (coords[1]%2) + coords[0]*2;
+                Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2) * apothem, ScreenCenter.getY() - radius * y * 1.5);
+                int noteindex;
+                if(noteLayout.equals("Janko")) //janko
+                {
+                    if(y >= 0)
+                    {
+                        noteindex = coords[1]*6 - 7*(coords[1]%2) + coords[0] * 2;
+
+                    }
+                    else
+                    {
+                        noteindex = coords[1]*6 + 5*(coords[1]%2) + coords[0] * 2;
+                    }
+                }
+                else //wicki-hayden
+                {
+                    noteindex = coords[1]*6 - (coords[1]%2) + coords[0]*2;
+                }
                 hexys[x + numx][y + numy] = new Hexagon(center, radius, coords, noteindex);
             }
         }
@@ -107,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         mCenter = new Vertex(options.mCenterx,options.mCentery);
 
         //create hexagon grid
-        calcHexagonGrid(mCenter);
+        calcHexagonGrid(mCenter,options.noteLayout);
         setContentView(new MyView(this));
     }
 
@@ -160,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         mCenter = new Vertex(options.mCenterx,options.mCentery);
 
         //create hexagon grid
-        calcHexagonGrid(mCenter);
+        calcHexagonGrid(mCenter,options.noteLayout);
         setContentView(new MyView(this));
 
     }
@@ -199,12 +217,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if(TouchHexagonMatch && !panning && !rescaling) {
-                    //show hexagon vertices for debugging
                     //Vertex[] v = TouchHexagon.getVertices();
-                    /*for(Vertex vv : v)
-                    {
-                        System.out.println(vv);
-                    }*/
 
                     Log.d(TAG, String.format("Clicked in hexagon: (%d, %d)", TouchHexagonCoords[0], TouchHexagonCoords[1]));
                     int noteindex = TouchHexagon.getNoteIndex();
@@ -214,7 +227,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG,String.format("Frequency (Hz) = %f",Scale_12EDO.noteIndexPitch(noteindex,A4)));
                     //audio playback part
                     //move to separate stream so activity doesn't hang
-                    System.out.println(options.instrument);
 
                     MusicScale scaletoplay;
                     if(options.musicScale.equals("Just-5lim"))
@@ -260,7 +272,8 @@ public class MainActivity extends AppCompatActivity {
                     {
                         mCenter.setY(2000.0);
                     }
-                    calcHexagonGrid(mCenter);
+                    Log.d(TAG, String.format("new Center: (%.1f, %.1f)", mCenter.getX(), mCenter.getY()));
+                    calcHexagonGrid(mCenter,options.noteLayout);
                     setContentView(new MyView(this));
                 }
                 else if(rescaling) //only pan if set
@@ -271,16 +284,17 @@ public class MainActivity extends AppCompatActivity {
                     radius = radius + -scalingfactor*(moveY - initialY);
                     radius = radius + scalingfactor*(moveX - initialX);
                     //bounds
-                    if(radius < 30.0)
+                    if(radius < 40.0)
                     {
-                        radius = 30.0;
+                        radius = 40.0;
                     }
                     else if(radius > 200.0)
                     {
                         radius = 200.0;
                     }
+                    Log.d(TAG, String.format("new radius: %.1f", radius));
                     apothem = (Math.sqrt(3.0) / 2.0) * radius;
-                    calcHexagonGrid(mCenter);
+                    calcHexagonGrid(mCenter,options.noteLayout);
                     setContentView(new MyView(this));
                 }
                 break;
@@ -307,8 +321,8 @@ public class MainActivity extends AppCompatActivity {
         Paint paint;
         Random random = new Random();
         //tertiary rainbow colors (12 = 3*2*2)
-        String[] c_rainbow = {"FF0000", "FF8000", "FFFF00", "80FF00", "00FF00", "00FF80",
-                                "00FFFF", "0080FF", "0000FF", "8000FF", "FF00FF", "FF0080"};
+        String[] c_rainbow = {"#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FF00", "#00FF80",
+                                "#00FFFF", "#0080FF", "#0000FF", "#8000FF", "#FF00FF", "#FF0080"};
         Path path = new Path();
 
         public MyView(Context context) {
@@ -319,12 +333,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onDraw(Canvas canvas)
         {
-            System.out.println("test: drew");
             super.onDraw(canvas);
             //draw the Hexagons
             paint.setStyle(Paint.Style.FILL);
             paint.setColor(Color.WHITE);
             canvas.drawPaint(paint);
+            boolean draw = true;
 
 
             for (Hexagon[] hexagon_row : hexys)
@@ -335,82 +349,91 @@ public class MainActivity extends AppCompatActivity {
                     int[] coords = hexagon.getCoords();
                     int x = coords[0];
                     int y = coords[1];
-
-                    path.reset();
-                    path.setFillType(Path.FillType.EVEN_ODD); //not important for this application
-                    Vertex[] vfirst = lineSegs[0].getVertices();
-                    path.moveTo((float) vfirst[0].getX(), (float) vfirst[0].getY());
-                    for (LineSeg l : lineSegs) {
-                        Vertex[] v;
-                        v = l.getVertices();
-                        //fill
-                        path.lineTo((float) v[1].getX(), (float) v[1].getY());
-                        //line borders
-                        paint.setStrokeWidth(10);
-                        canvas.drawLine((float) v[0].getX(), (float) v[0].getY(), (float) v[1].getX(), (float) v[1].getY(), paint);
-                    }
-                    //hash set later for extension
-                    int ni = hexagon.getNoteIndex(); //note index
-                    int nim = Scale_12EDO.noteIndexToScaleIndex(ni); //note index mod 12 and shifted for C
-                    //12edo only for now
-
-                    String c1, c2;
-
-
-                    // Keyboard Color
-                    switch (options.colorScheme) {
-                        case "B&W": //black & white
-                            c1 = "#696969"; c2 = "#F8F8F8";
-                            if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
-                                paint.setColor(Color.parseColor(c1));
-                            }
-                            else {
-                                paint.setColor(Color.parseColor(c2));
-                            }
-                            break;
-                        case "G&W": //green & white
-                            c1 = "#66ff33"; c2 = "#F8F8F8";
-                            if(nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
-                                paint.setColor(Color.parseColor(c1));
-                            }
-                            else {
-                                paint.setColor(Color.parseColor(c2));
-                            }
-                            break;
-                        case "Rainbow 5ths": //rainbow 5ths
-                            paint.setColor(Color.parseColor(c_rainbow[(((nim+1) % 12) * 7) % 12]));
-                            break;
-                        case "Random": //random colors
-                            int rand1 = random.nextInt(256*256*256);
-                            c1 = String.format("#%06x", rand1);
-                            paint.setColor(Color.parseColor(c1));
-                            break;
-                        default: //default all white just in case
-                            c1 = "FFFFFF";
-                            paint.setColor(Color.parseColor(c1));
-                            break;
-                    }
-
-                    canvas.drawPath(path, paint);
-                    path.close();
-                    paint.setColor(Color.BLACK);
-                    //scale text based on radius
-                    paint.setTextSize((float)(radius * 0.75));
-
-                    //Note name Display
-                    int notename_octave = Scale_12EDO.noteIndexOctave(ni);
-                    String s = Scale_12EDO.getNoteNames()[nim];
-
-                    //Current options implemented: Note only & Scientific
-                    //Always label note, but Scientific adds octave number as well
-                    if(options.keyDisplay.equals("Scientific"))
+                    draw = true;
+                    Vertex hexcenter = hexagon.getCenter();
+                    double distance = Math.sqrt(Math.pow(mCenter.getX() - hexcenter.getX(),2) + Math.pow(mCenter.getY() - hexcenter.getY(),2));
+                    //hardcoded value
+                    if(distance > 4000.0)
                     {
-                        s += notename_octave;
-                        canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 3.0/4.0), (float) hexagon.getCenter().getY(), paint);
+                        draw = false;
                     }
-                    else //note only
+
+                    if(draw) //don't draw if the hexagon is entirely offscreen
                     {
-                        canvas.drawText(s, (float) hexagon.getCenter().getX()-(float)(apothem * 2.0/4.0), (float) hexagon.getCenter().getY(), paint);
+                        path.reset();
+                        path.setFillType(Path.FillType.EVEN_ODD); //not important for this application
+                        Vertex[] vfirst = lineSegs[0].getVertices();
+                        path.moveTo((float) vfirst[0].getX(), (float) vfirst[0].getY());
+                        for (LineSeg l : lineSegs) {
+                            Vertex[] v;
+                            v = l.getVertices();
+                            //fill
+                            path.lineTo((float) v[1].getX(), (float) v[1].getY());
+                            //line borders
+                            paint.setStrokeWidth(10);
+                            canvas.drawLine((float) v[0].getX(), (float) v[0].getY(), (float) v[1].getX(), (float) v[1].getY(), paint);
+                        }
+                        //hash set later for extension
+                        int ni = hexagon.getNoteIndex(); //note index
+                        int nim = Scale_12EDO.noteIndexToScaleIndex(ni); //note index mod 12 and shifted for C
+                        //12edo only for now
+
+                        String c1, c2;
+
+
+                        // Keyboard Color
+                        switch (options.colorScheme) {
+                            case "B&W": //black & white
+                                c1 = "#696969";
+                                c2 = "#F8F8F8";
+                                if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
+                                    paint.setColor(Color.parseColor(c1));
+                                } else {
+                                    paint.setColor(Color.parseColor(c2));
+                                }
+                                break;
+                            case "G&W": //green & white
+                                c1 = "#66ff33";
+                                c2 = "#F8F8F8";
+                                if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
+                                    paint.setColor(Color.parseColor(c1));
+                                } else {
+                                    paint.setColor(Color.parseColor(c2));
+                                }
+                                break;
+                            case "Rainbow 5ths": //rainbow 5ths
+                                paint.setColor(Color.parseColor(c_rainbow[(((nim + 1) % 12) * 7) % 12]));
+                                break;
+                            case "Random": //random colors
+                                int rand1 = random.nextInt(256 * 256 * 256);
+                                c1 = String.format("#%06x", rand1);
+                                paint.setColor(Color.parseColor(c1));
+                                break;
+                            default: //default all white just in case
+                                c1 = "#FFFFFF";
+                                paint.setColor(Color.parseColor(c1));
+                                break;
+                        }
+
+                        canvas.drawPath(path, paint);
+                        path.close();
+                        paint.setColor(Color.BLACK);
+                        //scale text based on radius
+                        paint.setTextSize((float) (radius * 0.75));
+
+                        //Note name Display
+                        int notename_octave = Scale_12EDO.noteIndexOctave(ni);
+                        String s = Scale_12EDO.getNoteNames()[nim];
+
+                        //Current options implemented: Note only & Scientific
+                        //Always label note, but Scientific adds octave number as well
+                        if (options.keyDisplay.equals("Scientific")) {
+                            s += notename_octave;
+                            canvas.drawText(s, (float) hexagon.getCenter().getX() - (float) (apothem * 3.0 / 4.0), (float) hexagon.getCenter().getY(), paint);
+                        } else //note only
+                        {
+                            canvas.drawText(s, (float) hexagon.getCenter().getX() - (float) (apothem * 2.0 / 4.0), (float) hexagon.getCenter().getY(), paint);
+                        }
                     }
                 }
             }

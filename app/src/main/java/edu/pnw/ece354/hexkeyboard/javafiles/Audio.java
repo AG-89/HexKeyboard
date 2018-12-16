@@ -73,7 +73,6 @@ public class Audio implements Runnable
      */
     public static void playSound(HKAudioFile fileinfo, Context context)
     {
-
         double Rate = fileinfo.getFrequency(); //actually the Fs rate, not frequency
         String filename = fileinfo.getFileName();
 

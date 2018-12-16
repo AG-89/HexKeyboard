@@ -7,8 +7,7 @@ public class Hexagon {
     LineSeg[] lineSegs; //6 line segments
     Vertex center;
     double R, A; //Major Radius > Apothem (smaller radius)
-    double rotationAngle;
-    double stretchX, stretchY;
+    double rotationAngle; //rotation & skew are not implemented
     double skewX, skewY;
     int[] coords; //2d integer coordinate
     int noteindex;

@@ -67,50 +67,6 @@ public class MainActivity extends AppCompatActivity {
 
     Options options;
 
-    /**
-     * Calculates the hexagons and their vertices but does not draw them.
-     * @param ScreenCenter Coordinates for the center of the drawing area
-     */
-    void calcHexagonGrid(Vertex ScreenCenter, String noteLayout)
-    {
-        for (int x = -numx; x <= numx; x++) {
-            for (int y = -numy; y <= numy; y++) {
-                int[] coords = new int[]{x, y};
-                Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2) * apothem, ScreenCenter.getY() - radius * y * 1.5);
-                int noteindex;
-                if(noteLayout.equals("Janko")) //janko
-                {
-                    if(y >= 0)
-                    {
-                        noteindex = coords[1]*6 - 7*(coords[1]%2) + coords[0] * 2;
-
-                    }
-                    else
-                    {
-                        noteindex = coords[1]*6 + 5*(coords[1]%2) + coords[0] * 2;
-                    }
-                }
-                else //wicki-hayden
-                {
-                    noteindex = coords[1]*6 - (coords[1]%2) + coords[0]*2;
-                }
-                hexys[x + numx][y + numy] = new Hexagon(center, radius, coords, noteindex);
-            }
-        }
-    }
-
-    public void setSettings() {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String autoSave = sharedPreferences.getString("key_auto_save","");
-        if(autoSave.equals("true")) {
-            options.instrument = sharedPreferences.getString("key_instrument", "");
-            options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
-            options.musicScale = sharedPreferences.getString("key_music_scale", "");
-            options.keyDisplay = sharedPreferences.getString("key_display", "");
-            options.colorScheme = sharedPreferences.getString("key_color_scheme", "");
-        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,6 +111,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        //retrieve options from passed options object else set default
+        options = (Options)getIntent().getSerializableExtra("options");
+
+        if(options == null) //else set default options
+            options = new Options(trueCenter.getX(), trueCenter.getY());
+
+//        setSettings();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        options.instrument = sharedPreferences.getString("key_instrument", "");
+        options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
+        options.musicScale = sharedPreferences.getString("key_music_scale", "");
+        options.keyDisplay = sharedPreferences.getString("key_display", "");
+        options.colorScheme = sharedPreferences.getString("key_color_scheme", "");
+
+        apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
+        mCenter = new Vertex(options.mCenterx,options.mCentery);
+
+        //create hexagon grid
+        calcHexagonGrid(mCenter,options.noteLayout);
+        setContentView(new MyView(this));
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
@@ -189,37 +178,36 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    /**
+     * Calculates the hexagons and their vertices but does not draw them.
+     * @param ScreenCenter Coordinates for the center of the drawing area
+     */
+    void calcHexagonGrid(Vertex ScreenCenter, String noteLayout)
+    {
+        for (int x = -numx; x <= numx; x++) {
+            for (int y = -numy; y <= numy; y++) {
+                int[] coords = new int[]{x, y};
+                Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2) * apothem, ScreenCenter.getY() - radius * y * 1.5);
+                int noteindex;
+                if(noteLayout.equals("Janko")) //janko
+                {
+                    if(y >= 0)
+                    {
+                        noteindex = coords[1]*6 - 7*(coords[1]%2) + coords[0] * 2;
 
-        //retrieve options from passed options object else set default
-        options = (Options)getIntent().getSerializableExtra("options");
-
-        if(options == null) //else set default options
-            options = new Options(trueCenter.getX(), trueCenter.getY());
-
-//        setSettings();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        options.instrument = sharedPreferences.getString("key_instrument", "");
-        options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
-        options.musicScale = sharedPreferences.getString("key_music_scale", "");
-        options.keyDisplay = sharedPreferences.getString("key_display", "");
-        options.colorScheme = sharedPreferences.getString("key_color_scheme", "");
-
-        apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
-        mCenter = new Vertex(options.mCenterx,options.mCentery);
-
-        //create hexagon grid
-        calcHexagonGrid(mCenter,options.noteLayout);
-        setContentView(new MyView(this));
-
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    }
+                    else
+                    {
+                        noteindex = coords[1]*6 + 5*(coords[1]%2) + coords[0] * 2;
+                    }
+                }
+                else //wicki-hayden
+                {
+                    noteindex = coords[1]*6 - (coords[1]%2) + coords[0]*2;
+                }
+                hexys[x + numx][y + numy] = new Hexagon(center, radius, coords, noteindex);
+            }
+        }
     }
 
     @Override
@@ -291,7 +279,7 @@ public class MainActivity extends AppCompatActivity {
                 if(panning) //only pan if set
                 {
                     //how much to pan
-                    double panfactor = 0.5;
+                    double panfactor = 0.15;
                     mCenter.setX(mCenter.getX() + panfactor*(moveX - initialX));
                     mCenter.setY(mCenter.getY() + panfactor*(moveY - initialY));
                     //bounds
@@ -318,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
                 else if(rescaling) //only pan if set
                 {
                     //how fast to scale
-                    double scalingfactor = 0.1;
+                    double scalingfactor = 0.05;
                     //uses each axis seperately. Top right is increase
                     radius = radius + -scalingfactor*(moveY - initialY);
                     radius = radius + scalingfactor*(moveX - initialX);
@@ -478,7 +466,7 @@ public class MainActivity extends AppCompatActivity {
             }
             String s;
             //pan & resize mode notifier
-            paint.setTextSize(100);
+            paint.setTextSize(50);
             if(panning)
                 s = "PANNING MODE";
             else if(rescaling)

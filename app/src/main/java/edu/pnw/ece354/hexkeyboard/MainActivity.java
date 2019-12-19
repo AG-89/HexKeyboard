@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
     public void setSettings() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String autoSave = sharedPreferences.getString("key_auto_save","");
-        if("true".equals(autoSave)) {
+        if(autoSave.equals("true")) {
             options.instrument = sharedPreferences.getString("key_instrument", "");
             options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
             options.musicScale = sharedPreferences.getString("key_music_scale", "");
@@ -139,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
 //        setSettings();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//        String autoSave = sharedPreferences.getString("key_auto_save","");
         options.instrument = sharedPreferences.getString("key_instrument", "");
         options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
         options.musicScale = sharedPreferences.getString("key_music_scale", "");
@@ -165,9 +166,9 @@ public class MainActivity extends AppCompatActivity {
         switch(item.getItemId()) {
             case R.id.action_settings:
                 //settings
-                Intent intent = new Intent(this, SettingsActivity.class);
-                intent.putExtra("options",options);
-                startActivity(intent);
+//                Intent intent = new Intent(this, SettingsActivity.class);
+//                intent.putExtra("options",options);
+                startActivity(new Intent(this, SettingsActivity.class));
                 break;
             case R.id.action_pan:
                 //pan modez
@@ -213,6 +214,12 @@ public class MainActivity extends AppCompatActivity {
         calcHexagonGrid(mCenter,options.noteLayout);
         setContentView(new MyView(this));
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
 
     @Override

@@ -1,7 +1,6 @@
 package edu.pnw.ece354.hexkeyboard;
 
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;

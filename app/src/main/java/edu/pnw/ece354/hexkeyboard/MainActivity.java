@@ -367,6 +367,7 @@ public class MainActivity extends AppCompatActivity {
             canvas.drawPaint(paint);
             boolean draw = true;
 
+            int rand1 = random.nextInt(256 * 256 * 256);
 
             for (Hexagon[] hexagon_row : hexys)
             {
@@ -432,9 +433,14 @@ public class MainActivity extends AppCompatActivity {
                                 paint.setColor(Color.parseColor(c_rainbow[(((nim + 1) % 12) * 7) % 12]));
                                 break;
                             case "Random": //random colors
-                                int rand1 = random.nextInt(256 * 256 * 256);
                                 c1 = String.format("#%06x", rand1);
+                                c2 = "#F8F8F8";
                                 paint.setColor(Color.parseColor(c1));
+                                if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
+                                    paint.setColor(Color.parseColor(c1));
+                                } else {
+                                    paint.setColor(Color.parseColor(c2));
+                                }
                                 break;
                             default: //default all white just in case
                                 c1 = "#FFFFFF";

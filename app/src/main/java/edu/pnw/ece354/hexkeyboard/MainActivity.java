@@ -10,7 +10,9 @@
 package edu.pnw.ece354.hexkeyboard;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.graphics.Canvas;
@@ -97,6 +99,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void setSettings() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String autoSave = sharedPreferences.getString("key_auto_save","");
+        if("true".equals(autoSave)) {
+            options.instrument = sharedPreferences.getString("key_instrument", "");
+            options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
+            options.musicScale = sharedPreferences.getString("key_music_scale", "");
+            options.keyDisplay = sharedPreferences.getString("key_display", "");
+            options.colorScheme = sharedPreferences.getString("key_color_scheme", "");
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,11 +129,21 @@ public class MainActivity extends AppCompatActivity {
         trueCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
         mCenter = trueCenter;
 
-        //retrieve options from passed options object else set default
-        options = (Options)getIntent().getSerializableExtra("options");
+//        //retrieve options from passed options object else set default
+//        options = (Options)getIntent().getSerializableExtra("options");
 
         if(options == null) //else set default options
+        {
             options = new Options(trueCenter.getX(), trueCenter.getY());
+        }
+
+//        setSettings();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        options.instrument = sharedPreferences.getString("key_instrument", "");
+        options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
+        options.musicScale = sharedPreferences.getString("key_music_scale", "");
+        options.keyDisplay = sharedPreferences.getString("key_display", "");
+        options.colorScheme = sharedPreferences.getString("key_color_scheme", "");
 
         apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
         mCenter = new Vertex(options.mCenterx,options.mCentery);
@@ -141,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
         switch(item.getItemId()) {
             case R.id.action_settings:
                 //settings
-                Intent intent = new Intent(this, Main2Activity.class);
+                Intent intent = new Intent(this, SettingsActivity.class);
                 intent.putExtra("options",options);
                 startActivity(intent);
                 break;
@@ -173,6 +197,14 @@ public class MainActivity extends AppCompatActivity {
 
         if(options == null) //else set default options
             options = new Options(trueCenter.getX(), trueCenter.getY());
+
+//        setSettings();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        options.instrument = sharedPreferences.getString("key_instrument", "");
+        options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
+        options.musicScale = sharedPreferences.getString("key_music_scale", "");
+        options.keyDisplay = sharedPreferences.getString("key_display", "");
+        options.colorScheme = sharedPreferences.getString("key_color_scheme", "");
 
         apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
         mCenter = new Vertex(options.mCenterx,options.mCentery);
@@ -383,7 +415,7 @@ public class MainActivity extends AppCompatActivity {
 
                         // Keyboard Color
                         switch (options.colorScheme) {
-                            case "B&W": //black & white
+                            case "Black & White": //black & white
                                 c1 = "#696969";
                                 c2 = "#F8F8F8";
                                 if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
@@ -392,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
                                     paint.setColor(Color.parseColor(c2));
                                 }
                                 break;
-                            case "G&W": //green & white
+                            case "Green & White": //green & white
                                 c1 = "#66ff33";
                                 c2 = "#F8F8F8";
                                 if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {

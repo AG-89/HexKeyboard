@@ -19,10 +19,10 @@ public class Options implements Serializable
     public Options()
     {
         instrument = "Piano";
-        noteLayout = "WH";
-        musicScale = "12EDO";
+        noteLayout = "Wicki-Hayden";
+        musicScale = "12-EDO";
         keyDisplay = "Scientific";
-        colorScheme = "B&W";
+        colorScheme = "Black & White";
         volume = 100;
         radius = 69.0;
         mCenterx = 0.0;

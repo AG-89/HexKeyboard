@@ -64,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
 
     Options options;
 
+    int rand1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
         apothem = (Math.sqrt(3.0) / 2.0) * options.radius;
         mCenter = new Vertex(options.mCenterx,options.mCentery);
 
+        Random random = new Random();
+        rand1 = random.nextInt(256 * 256 * 256);
+
         //create hexagon grid
         calcHexagonGrid(mCenter,options.noteLayout);
         setContentView(new MyView(this));
@@ -116,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        options.radius = radius;
+        options.mCenterx = mCenter.getX();
+        options.mCentery = mCenter.getY();
     }
 
     @Override
@@ -134,8 +141,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case R.id.action_pan:
                 //pan modez
-                panning = !panning;
                 rescaling = false;
+                panning = !panning;
                 Log.d(TAG,String.format("panning set to %b",panning));
                 break;
             case R.id.action_rescale:
@@ -154,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Calculates the hexagons and their vertices but does not draw them.
      * @param ScreenCenter Coordinates for the center of the drawing area
+     * @param noteLayout Indicates how notes are assigned to each hexagon
      */
     void calcHexagonGrid(Vertex ScreenCenter, String noteLayout)
     {
@@ -264,7 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else if(rescaling) { //only pan if set
                     //how fast to scale
-                    double scalingfactor = 0.05;
+                    double scalingfactor = 0.04;
                     //uses each axis seperately. Top right is increase
                     radius = radius + -scalingfactor*(moveY - initialY);
                     radius = radius + scalingfactor*(moveX - initialX);
@@ -302,7 +310,8 @@ public class MainActivity extends AppCompatActivity {
     //view to draw: hex grid
     public class MyView extends View {
         Paint paint;
-        Random random = new Random();
+//        Random random = new Random();
+//        int rand1 = random.nextInt(256 * 256 * 256);
         //tertiary rainbow colors (12 = 3*2*2)
         String[] c_rainbow = {"#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FF00", "#00FF80",
                                 "#00FFFF", "#0080FF", "#0000FF", "#8000FF", "#FF00FF", "#FF0080"};
@@ -322,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
             canvas.drawPaint(paint);
             boolean draw = true;
 
-            int rand1 = random.nextInt(256 * 256 * 256);
+//            int rand1 = random.nextInt(256 * 256 * 256);
 
             for (Hexagon[] hexagon_row : hexys) {
                 for (Hexagon hexagon : hexagon_row) {
@@ -349,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
                             //fill
                             path.lineTo((float) v[1].getX(), (float) v[1].getY());
                             //line borders
-                            paint.setStrokeWidth(10);
+                            paint.setStrokeWidth(5);
                             canvas.drawLine((float) v[0].getX(), (float) v[0].getY(), (float) v[1].getX(), (float) v[1].getY(), paint);
                         }
                         //hash set later for extension

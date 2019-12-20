@@ -37,9 +37,6 @@ public class MainActivity extends AppCompatActivity {
 
     private String TAG = MainActivity.class.getSimpleName();
 
-    int ScreenWidth;
-    int ScreenHeight;
-
     //music stuff
     MusicScale Scale_12EDO = new MusicScale(12);
     MusicScale Scale_Just5lim = new MusicScale(new String[]{"Db","D-","Eb","E-","F-","F#","G-","Ab","A-","Bb","B-","C-"},
@@ -70,12 +67,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
-        //setContentView(new MyView(this));
-
-        //Toolbar toolbar = findViewById(R.id.toolbar);
-        //setSupportActionBar(toolbar);
-        //toolbar.setTitle("Hexys");
 
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -84,18 +75,10 @@ public class MainActivity extends AppCompatActivity {
         int ScreenHeight = size.y - 220; //fix later
         trueCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
         mCenter = trueCenter;
+        options = new Options(trueCenter.getX(), trueCenter.getY());
 
-//        //retrieve options from passed options object else set default
-//        options = (Options)getIntent().getSerializableExtra("options");
-
-        if(options == null) //else set default options
-        {
-            options = new Options(trueCenter.getX(), trueCenter.getY());
-        }
-
-//        setSettings();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-//        String autoSave = sharedPreferences.getString("key_auto_save","");
+        boolean auto_save_settings = sharedPreferences.getBoolean("key_auto_save",false);
         options.instrument = sharedPreferences.getString("key_instrument", "");
         options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
         options.musicScale = sharedPreferences.getString("key_music_scale", "");
@@ -114,13 +97,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        //retrieve options from passed options object else set default
-        options = (Options)getIntent().getSerializableExtra("options");
-
-        if(options == null) //else set default options
-            options = new Options(trueCenter.getX(), trueCenter.getY());
-
-//        setSettings();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         options.instrument = sharedPreferences.getString("key_instrument", "");
         options.noteLayout = sharedPreferences.getString("key_keyboard_layout", "");
@@ -140,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+//        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
 
     @Override
@@ -154,9 +130,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.action_settings:
-                //settings
-//                Intent intent = new Intent(this, SettingsActivity.class);
-//                intent.putExtra("options",options);
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
             case R.id.action_pan:
@@ -189,20 +162,15 @@ public class MainActivity extends AppCompatActivity {
                 int[] coords = new int[]{x, y};
                 Vertex center = new Vertex(ScreenCenter.getX() + apothem * 2.0 * x - (y % 2) * apothem, ScreenCenter.getY() - radius * y * 1.5);
                 int noteindex;
-                if(noteLayout.equals("Janko")) //janko
-                {
-                    if(y >= 0)
-                    {
+                if(noteLayout.equals("Janko")) { //janko
+                    if(y >= 0) {
                         noteindex = coords[1]*6 - 7*(coords[1]%2) + coords[0] * 2;
-
                     }
-                    else
-                    {
+                    else {
                         noteindex = coords[1]*6 + 5*(coords[1]%2) + coords[0] * 2;
                     }
                 }
-                else //wicki-hayden
-                {
+                else { //wicki-hayden
                     noteindex = coords[1]*6 - (coords[1]%2) + coords[0]*2;
                 }
                 hexys[x + numx][y + numy] = new Hexagon(center, radius, coords, noteindex);
@@ -217,7 +185,6 @@ public class MainActivity extends AppCompatActivity {
 
         int action = event.getActionMasked();
         //boolean down = false;
-
 
         switch (action) {
 
@@ -238,7 +205,6 @@ public class MainActivity extends AppCompatActivity {
                             TouchHexagonCoords = hexagon.getCoords();
                             TouchHexagonMatch = true;
                             TouchHexagon = hexagon;
-
                         }
                     }
                 }
@@ -256,12 +222,10 @@ public class MainActivity extends AppCompatActivity {
                     //move to separate stream so activity doesn't hang
 
                     MusicScale scaletoplay;
-                    if(options.musicScale.equals("Just-5lim"))
-                    {
+                    if(options.musicScale.equals("Just-5lim")) {
                         scaletoplay = Scale_Just5lim;
                     }
-                    else
-                    {
+                    else {
                         scaletoplay = Scale_12EDO;
                     }
                     Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,scaletoplay,A4,options.instrument),this));
@@ -276,47 +240,39 @@ public class MainActivity extends AppCompatActivity {
                 float moveY = event.getY();
                 Log.d(TAG, String.format("init coords: (%.1f, %.1f)", initialX, initialY));
                 Log.d(TAG, String.format("move coords: (%.1f, %.1f)", moveX, moveY));
-                if(panning) //only pan if set
-                {
+                if(panning) { //only pan if set
                     //how much to pan
                     double panfactor = 0.15;
                     mCenter.setX(mCenter.getX() + panfactor*(moveX - initialX));
                     mCenter.setY(mCenter.getY() + panfactor*(moveY - initialY));
                     //bounds
-                    if(mCenter.getX() > 5000.0)
-                    {
+                    if(mCenter.getX() > 5000.0) {
                         mCenter.setX(5000.0);
                     }
-                    if(mCenter.getX() < -5000.0)
-                    {
+                    if(mCenter.getX() < -5000.0) {
                         mCenter.setX(-5000.0);
                     }
-                    if(mCenter.getY() > 2000.0)
-                    {
+                    if(mCenter.getY() > 2000.0) {
                         mCenter.setY(2000.0);
                     }
-                    if(mCenter.getY() < -2000.0)
-                    {
+                    if(mCenter.getY() < -2000.0) {
                         mCenter.setY(2000.0);
                     }
                     Log.d(TAG, String.format("new Center: (%.1f, %.1f)", mCenter.getX(), mCenter.getY()));
                     calcHexagonGrid(mCenter,options.noteLayout);
                     setContentView(new MyView(this));
                 }
-                else if(rescaling) //only pan if set
-                {
+                else if(rescaling) { //only pan if set
                     //how fast to scale
                     double scalingfactor = 0.05;
                     //uses each axis seperately. Top right is increase
                     radius = radius + -scalingfactor*(moveY - initialY);
                     radius = radius + scalingfactor*(moveX - initialX);
                     //bounds
-                    if(radius < 40.0)
-                    {
+                    if(radius < 40.0) {
                         radius = 40.0;
                     }
-                    else if(radius > 200.0)
-                    {
+                    else if(radius > 200.0) {
                         radius = 200.0;
                     }
                     Log.d(TAG, String.format("new radius: %.1f", radius));
@@ -358,8 +314,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onDraw(Canvas canvas)
-        {
+        protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             //draw the Hexagons
             paint.setStyle(Paint.Style.FILL);
@@ -369,10 +324,8 @@ public class MainActivity extends AppCompatActivity {
 
             int rand1 = random.nextInt(256 * 256 * 256);
 
-            for (Hexagon[] hexagon_row : hexys)
-            {
-                for (Hexagon hexagon : hexagon_row)
-                {
+            for (Hexagon[] hexagon_row : hexys) {
+                for (Hexagon hexagon : hexagon_row) {
                     LineSeg[] lineSegs = hexagon.getLineSegs();
                     int[] coords = hexagon.getCoords();
                     int x = coords[0];
@@ -381,13 +334,11 @@ public class MainActivity extends AppCompatActivity {
                     Vertex hexcenter = hexagon.getCenter();
                     double distance = Math.sqrt(Math.pow(mCenter.getX() - hexcenter.getX(),2) + Math.pow(mCenter.getY() - hexcenter.getY(),2));
                     //hardcoded value
-                    if(distance > 4000.0)
-                    {
+                    if(distance > 4000.0) {
                         draw = false;
                     }
 
-                    if(draw) //don't draw if the hexagon is entirely offscreen
-                    {
+                    if(draw) { //don't draw if the hexagon is entirely offscreen
                         path.reset();
                         path.setFillType(Path.FillType.EVEN_ODD); //not important for this application
                         Vertex[] vfirst = lineSegs[0].getVertices();
@@ -416,7 +367,8 @@ public class MainActivity extends AppCompatActivity {
                                 c2 = "#F8F8F8";
                                 if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
                                     paint.setColor(Color.parseColor(c1));
-                                } else {
+                                }
+                                else {
                                     paint.setColor(Color.parseColor(c2));
                                 }
                                 break;
@@ -425,7 +377,8 @@ public class MainActivity extends AppCompatActivity {
                                 c2 = "#F8F8F8";
                                 if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
                                     paint.setColor(Color.parseColor(c1));
-                                } else {
+                                }
+                                else {
                                     paint.setColor(Color.parseColor(c2));
                                 }
                                 break;
@@ -438,7 +391,8 @@ public class MainActivity extends AppCompatActivity {
                                 paint.setColor(Color.parseColor(c1));
                                 if (nim == 0 || nim == 2 || nim == 5 || nim == 7 || nim == 9) {
                                     paint.setColor(Color.parseColor(c1));
-                                } else {
+                                }
+                                else {
                                     paint.setColor(Color.parseColor(c2));
                                 }
                                 break;
@@ -463,13 +417,14 @@ public class MainActivity extends AppCompatActivity {
                         if (options.keyDisplay.equals("Scientific")) {
                             s += notename_octave;
                             canvas.drawText(s, (float) hexagon.getCenter().getX() - (float) (apothem * 3.0 / 4.0), (float) hexagon.getCenter().getY(), paint);
-                        } else //note only
-                        {
+                        }
+                        else { //note only
                             canvas.drawText(s, (float) hexagon.getCenter().getX() - (float) (apothem * 2.0 / 4.0), (float) hexagon.getCenter().getY(), paint);
                         }
                     }
                 }
             }
+
             String s;
             //pan & resize mode notifier
             paint.setTextSize(50);

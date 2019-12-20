@@ -1,7 +1,6 @@
 package edu.pnw.ece354.hexkeyboard;
 
 import android.os.Bundle;
-import android.preference.EditTextPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -53,8 +52,6 @@ public class SettingsActivity extends PreferenceActivity {
                 preference.setSummary(index > 0
                 ? listPreference.getEntries()[index]
                 : null);
-            } else if (preference instanceof EditTextPreference) {
-                preference.setSummary(stringValue);
             }
             return true;
         }

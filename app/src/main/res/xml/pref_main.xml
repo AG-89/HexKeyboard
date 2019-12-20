@@ -5,26 +5,18 @@
         android:key="user_category"
         android:title="Keyboard">
 
-<!--        <CheckBoxPreference-->
-<!--            android:defaultValue="true"-->
-<!--            android:key="key_auto_save"-->
-<!--            android:summary="Automatically save keyboard settings"-->
-<!--            android:title="Auto Save" />-->
-
-        <SwitchPreference
-            android:defaultValue="true"
-            android:key="key_auto_save"
-            android:summary="Automatically save keyboard settings"
-            android:title="Auto Save" />
+        <Preference
+            android:selectable="false"
+            android:summary="Customize your keyboard for your needs and personal taste."/>
 
         <ListPreference
-            android:defaultValue="Piano"
+            android:title="@string/title_instrument"
+            android:summary="Choose your choice of instrument"
             android:dialogTitle="Instruments"
             android:entries="@array/pref_instrument"
             android:entryValues="@array/pref_instrument"
             android:key="key_instrument"
-            android:summary="@string/summary_instrument"
-            android:title="@string/title_instrument" />
+            android:defaultValue="Piano"/>
 
         <ListPreference
             android:defaultValue="Wicki-Hayden"
@@ -70,32 +62,19 @@
             android:title="@string/title_version" />
 
         <Preference
-            android:key="@string/key_send_feedback"
-            android:summary="@string/summary_support"
-            android:title="@string/title_send_feedback" />
-
-        <!-- preference opens url in browser -->
-<!--        <Preference-->
-<!--            android:summary="@string/summary_faq"-->
-<!--            android:title="@string/title_faq">-->
-<!--            <intent-->
-<!--                android:action="android.intent.action.VIEW"-->
-<!--                android:data="@string/url_faq" />-->
-<!--        </Preference>-->dfg
+            android:title="Send Feedback"
+            android:summary="@string/summary_feedback">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="mailto:hexkeyboard@gmail.com?subject=Feedback">
+                <extra android:name="android.intent.extra.TEXT" android:value="This is a test" />
+            </intent>
+        </Preference>
 
         <Preference
             android:title="@string/privacy_policy"
             android:selectable="false"
             android:summary="We do not store or use your data. Period.">
-<!--            <intent-->
-<!--                android:action="android.intent.action.VIEW"-->
-<!--                android:data="@string/url_privacy" />-->
         </Preference>
-
-<!--        <Preference android:title="@string/title_terms">-->
-<!--            <intent-->
-<!--                android:action="android.intent.action.VIEW"-->
-<!--                android:data="@string/url_terms" />-->
-<!--        </Preference>-->
     </PreferenceCategory>
 </PreferenceScreen>

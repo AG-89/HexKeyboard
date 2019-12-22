@@ -36,6 +36,12 @@
     </string-array>
 
     <string-array name="pref_color_scheme">
+        <item>Default</item>
+        <item>Green &amp; White</item>
+        <item>Rainbow 5ths</item>
+        <item>Random</item>
+    </string-array>
+    <string-array name="pref_color_values">
         <item>Black &amp; White</item>
         <item>Green &amp; White</item>
         <item>Rainbow 5ths</item>

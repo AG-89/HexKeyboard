@@ -9,17 +9,17 @@
 
 package edu.pnw.ece354.hexkeyboard;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Point;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.content.Context;
+import android.graphics.Point;
+import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
@@ -30,7 +30,12 @@ import android.view.View;
 
 import java.util.Random;
 
-import edu.pnw.ece354.hexkeyboard.javafiles.*;
+import edu.pnw.ece354.hexkeyboard.javafiles.Audio;
+import edu.pnw.ece354.hexkeyboard.javafiles.Hexagon;
+import edu.pnw.ece354.hexkeyboard.javafiles.LineSeg;
+import edu.pnw.ece354.hexkeyboard.javafiles.MusicScale;
+import edu.pnw.ece354.hexkeyboard.javafiles.Options;
+import edu.pnw.ece354.hexkeyboard.javafiles.Vertex;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -74,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
         Point size = new Point();
         display.getSize(size);
         int ScreenWidth = size.x;
-        int ScreenHeight = size.y - 220; //fix later
+        int ScreenHeight = size.y - 150; //fix later
         trueCenter = new Vertex((float)ScreenWidth/2,(float)ScreenHeight/2);
         mCenter = trueCenter;
         options = new Options(trueCenter.getX(), trueCenter.getY());
@@ -203,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, String.format("Down init coords: (%f, %f)",initialX,initialY));
 
                 //check point inside which hexagon here
-                Vertex TouchV = new Vertex((double)initialX,(double)initialY-220);
+                Vertex TouchV = new Vertex((double)initialX,(double)initialY - 150);
                 int[] TouchHexagonCoords = new int[2]; //integer coordinates of hexagon
                 boolean TouchHexagonMatch = false; //is inside ANY hexagon
                 Hexagon TouchHexagon = null;
@@ -238,6 +243,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                     Thread t1 = new Thread(new Audio(Audio.getHKAudioFileFromNI(noteindex,scaletoplay,A4,options.instrument),this));
                     t1.start();
+
+//                    https://stackoverflow.com/questions/15874117/how-to-set-delay-in-android
+//                    final Handler handler = new Handler();
+//                    handler.postDelayed(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            // Do something after 0.5s = 500ms
+//
+//                        }
+//                    }, 500);
+
 
                 }
 
@@ -291,7 +307,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
 
             case MotionEvent.ACTION_UP:
-
                 Log.d(TAG, "Action was UP");
                 break;
 
@@ -310,8 +325,6 @@ public class MainActivity extends AppCompatActivity {
     //view to draw: hex grid
     public class MyView extends View {
         Paint paint;
-//        Random random = new Random();
-//        int rand1 = random.nextInt(256 * 256 * 256);
         //tertiary rainbow colors (12 = 3*2*2)
         String[] c_rainbow = {"#FF0000", "#FF8000", "#FFFF00", "#80FF00", "#00FF00", "#00FF80",
                                 "#00FFFF", "#0080FF", "#0000FF", "#8000FF", "#FF00FF", "#FF0080"};
@@ -330,8 +343,6 @@ public class MainActivity extends AppCompatActivity {
             paint.setColor(Color.WHITE);
             canvas.drawPaint(paint);
             boolean draw = true;
-
-//            int rand1 = random.nextInt(256 * 256 * 256);
 
             for (Hexagon[] hexagon_row : hexys) {
                 for (Hexagon hexagon : hexagon_row) {

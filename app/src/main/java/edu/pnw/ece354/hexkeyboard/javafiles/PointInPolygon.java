@@ -7,10 +7,8 @@ public class PointInPolygon
 {
     public static boolean onSegment(Vertex p, Vertex q, Vertex r)
     {
-        if (q.getX() <= Math.max(p.getX(), r.getX()) && q.getX() >= Math.min(p.getX(), r.getX())
-                && q.getY() <= Math.max(p.getY(), r.getY()) && q.getY() >= Math.min(p.getY(), r.getY()))
-            return true;
-        return false;
+        return q.getX() <= Math.max(p.getX(), r.getX()) && q.getX() >= Math.min(p.getX(), r.getX())
+                && q.getY() <= Math.max(p.getY(), r.getY()) && q.getY() >= Math.min(p.getY(), r.getY());
     }
 
     public static int orientation(Vertex p, Vertex q, Vertex r)
@@ -77,6 +75,6 @@ public class PointInPolygon
             i = next;
         } while (i != 0);
 
-        return (count & 1) == 1;
+        return (count % 2 == 1);
     }
 }
